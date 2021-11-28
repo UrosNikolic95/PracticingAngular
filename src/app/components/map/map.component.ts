@@ -50,21 +50,14 @@ export class MapComponent implements OnInit {
       item.left = Math.floor(Math.random() * 1000);
       item.top = Math.floor(Math.random() * 1000);
     });
-    this.workers = Array.from({ length: 1 }, () => new WorkerModel());
+    this.workers = Array.from({ length: 100 }, () => new WorkerModel());
     this.workers.forEach((item) => {
       item.left = Math.floor(Math.random() * 1000);
       item.top = Math.floor(Math.random() * 1000);
       setTimeout(() => {
-        this.randomMove(item, () => {
-          this.randomMove(item, () => {
-            this.randomMove(item);
-          });
-        });
+        this.randomMove(item);
       }, 3000);
     });
-    // interval(3000).subscribe(() => {
-    //   this.workers.forEach((worker) => this.randomMove(worker));
-    // });
   }
 
   randomMove(item: WorkerModel, callback?: () => void): WorkerModel {
@@ -76,7 +69,7 @@ export class MapComponent implements OnInit {
       topEnd,
       leftEnd,
       this.length(item.top, item.left, topEnd, leftEnd) * 3,
-      callback
+      () => this.randomMove(item)
     );
     item.left = leftEnd;
     item.top = topEnd;
