@@ -1,0 +1,8 @@
+<app-factory *ngFor="let item of factories" [factory]="item"> </app-factory>
+
+<app-worker
+  *ngFor="let item of workers"
+  [top]="item.top"
+  [left]="item.left"
+  [@move]="item.move"
+></app-worker>
