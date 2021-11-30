@@ -28,15 +28,15 @@ export class Point {
 }
 
 export class ProductionData {
-  [resource: string]: ProductionRowData;
+  [resource: string]: ProductionItemData;
 }
 
-export class ProductionRowData {
+export class ProductionItemData {
   production = 0;
-  consumption = new ProductionColumnData();
+  consumption = new ConsumptionItemData();
 }
 
-export class ProductionColumnData {
+export class ConsumptionItemData {
   [resource: string]: number;
 }
 
