@@ -11,7 +11,7 @@ import {
   FactoryModel,
   MoveParams,
   WorkerModel,
-} from 'src/app/inner-logic/random-stuf';
+} from 'src/app/inner-logic/models';
 
 @Component({
   selector: 'app-map',

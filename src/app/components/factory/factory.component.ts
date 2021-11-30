@@ -1,5 +1,5 @@
 import { Component, HostBinding, Input, OnInit } from '@angular/core';
-import { FactoryModel } from 'src/app/inner-logic/random-stuf';
+import { FactoryModel } from 'src/app/inner-logic/models';
 
 @Component({
   selector: 'app-factory',
