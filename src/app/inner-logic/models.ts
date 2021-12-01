@@ -1,6 +1,8 @@
 export class FactoryModel {
   location = new Point();
   producesResource = '';
+  offeredPaycheck = 0;
+  offeredPrice = 0;
   productionLineData = new ProductionLineData();
   inventoryData = new InventoryData();
 }
