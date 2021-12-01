@@ -83,15 +83,15 @@ export class MapComponent implements OnInit {
     const { x: x2, y: y2 } = B;
     const lengtUnit = 'px';
     const timeUnit = 'ms';
-    if (callback) setTimeout(callback, milliseconds);
+    if (callback) setTimeout(callback, milliseconds + 2000);
     return {
       value: Date.now(), //every time this changes animation is played
       params: {
         time: milliseconds + timeUnit,
-        topStart: x1 + lengtUnit,
-        topEnd: x2 + lengtUnit,
-        leftStart: y1 + lengtUnit,
-        leftEnd: y2 + lengtUnit,
+        topStart: y1 + lengtUnit,
+        topEnd: y2 + lengtUnit,
+        leftStart: x1 + lengtUnit,
+        leftEnd: x2 + lengtUnit,
       },
     };
   }

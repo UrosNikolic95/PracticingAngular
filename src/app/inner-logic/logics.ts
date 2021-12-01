@@ -61,44 +61,44 @@ function SetProduction(
 }
 
 export function Produce(
-  production: ProductionLineData,
-  inventory: InventoryData
+  productionLineData: ProductionLineData,
+  inventoryData: InventoryData
 ) {
-  if (CheckRequirements(production, inventory)) {
-    ProductionChange(production, inventory);
+  if (CheckRequirements(productionLineData, inventoryData)) {
+    ProductionChange(productionLineData, inventoryData);
   }
 }
 
 function CheckRequirements(
-  production: ProductionLineData,
-  inventory: InventoryData
+  productionLineData: ProductionLineData,
+  inventoryData: InventoryData
 ): boolean {
-  const consumedResources = Object.keys(production.consumptionQuantity);
+  const consumedResources = Object.keys(productionLineData.consumptionQuantity);
   return consumedResources.every((resource) => {
     return (
-      inventory.consumption[resource] &&
-      production.consumptionQuantity[resource] &&
-      inventory.consumption[resource].quantity <=
-        production.consumptionQuantity[resource]
+      inventoryData.consumption[resource] &&
+      productionLineData.consumptionQuantity[resource] &&
+      inventoryData.consumption[resource].quantity <=
+        productionLineData.consumptionQuantity[resource]
     );
   });
 }
 
 function ProductionChange(
-  production: ProductionLineData,
-  inventory: InventoryData
+  productionLineData: ProductionLineData,
+  inventoryData: InventoryData
 ): void {
-  const consumedResources = Object.keys(production.consumptionQuantity);
+  const consumedResources = Object.keys(productionLineData.consumptionQuantity);
   let totalCost = 0;
   consumedResources.forEach((resource) => {
-    const recordItem = inventory.consumption[resource];
+    const recordItem = inventoryData.consumption[resource];
     const { quantity, cost } = recordItem;
-    const consumedQuantity = production.consumptionQuantity[resource];
-    const pricePart = consumedQuantity * (cost / quantity);
+    const consumedQuantity = productionLineData.consumptionQuantity[resource];
+    const resourcePrice = consumedQuantity * (cost / quantity);
     recordItem.quantity -= consumedQuantity;
-    recordItem.cost -= pricePart;
-    totalCost += pricePart;
+    recordItem.cost -= resourcePrice;
+    totalCost += resourcePrice;
   });
-  inventory.production.quantity += production.productionQuantity;
-  inventory.production.cost += totalCost;
+  inventoryData.production.quantity += productionLineData.productionQuantity;
+  inventoryData.production.cost += totalCost;
 }
