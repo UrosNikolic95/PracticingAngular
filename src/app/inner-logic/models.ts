@@ -1,6 +1,4 @@
 export class FactoryModel {
-  top = 0;
-  left = 0;
   location = new Point();
   producesResource = '';
   productionLineData = new ProductionLineData();
@@ -8,8 +6,6 @@ export class FactoryModel {
 }
 
 export class WorkerModel {
-  top = 0;
-  left = 0;
   location = new Point();
   move = new MoveParams();
 }
