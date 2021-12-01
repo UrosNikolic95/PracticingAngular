@@ -11,8 +11,8 @@ export class FactoryComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.factory) {
-      this.top = this.factory?.top;
-      this.left = this.factory?.left;
+      this.left = this.factory?.location?.x;
+      this.top = this.factory?.location?.y;
     }
   }
 

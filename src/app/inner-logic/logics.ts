@@ -2,7 +2,7 @@ import {
   ConsumptionItemData,
   InventoryData,
   ProductionData,
-  ProductionItemData,
+  ProductionLineData,
 } from './models';
 
 export function GenerateProductionData(
@@ -21,7 +21,7 @@ export function GenerateProductionData(
 function GenerateConsumption(resources: string[]): ProductionData {
   const productionData = new ProductionData();
   resources.forEach((producedResource) => {
-    const row = new ProductionItemData();
+    const row = new ProductionLineData();
     resources.forEach((consumedResource) => {
       row.consumptionQuantity[consumedResource] = Math.random() * 10;
     });
@@ -61,7 +61,7 @@ function SetProduction(
 }
 
 export function Produce(
-  production: ProductionItemData,
+  production: ProductionLineData,
   inventory: InventoryData
 ) {
   if (CheckRequirements(production, inventory)) {
@@ -70,7 +70,7 @@ export function Produce(
 }
 
 function CheckRequirements(
-  production: ProductionItemData,
+  production: ProductionLineData,
   inventory: InventoryData
 ): boolean {
   const consumedResources = Object.keys(production.consumptionQuantity);
@@ -85,7 +85,7 @@ function CheckRequirements(
 }
 
 function ProductionChange(
-  production: ProductionItemData,
+  production: ProductionLineData,
   inventory: InventoryData
 ): void {
   const consumedResources = Object.keys(production.consumptionQuantity);

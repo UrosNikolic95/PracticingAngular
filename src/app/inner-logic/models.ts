@@ -1,11 +1,16 @@
 export class FactoryModel {
   top = 0;
   left = 0;
+  location = new Point();
+  producesResource = '';
+  productionLineData = new ProductionLineData();
+  inventoryData = new InventoryData();
 }
 
 export class WorkerModel {
   top = 0;
   left = 0;
+  location = new Point();
   move = new MoveParams();
 }
 
@@ -16,9 +21,9 @@ export class MoveParams {
 
 export class Params {
   time = ''; //example: 100ms string
-  topStart = '';
-  topEnd = '';
-  leftStart = '';
+  topStart = ''; //example: 100px string
+  topEnd = ''; //example: 100px string
+  leftStart = ''; //example: 100px string
   leftEnd = ''; //example: 100px string
 }
 
@@ -28,11 +33,10 @@ export class Point {
 }
 
 export class ProductionData {
-  [resource: string]: ProductionItemData;
+  [resource: string]: ProductionLineData;
 }
 
-export class ProductionItemData {
-  producesResource = '';
+export class ProductionLineData {
   productionQuantity = 0;
   consumptionQuantity = new ConsumptionItemData();
 }
@@ -42,7 +46,6 @@ export class ConsumptionItemData {
 }
 
 export class InventoryData {
-  producesResource = '';
   production = new RecordItem();
   consumption = new RecordItemSet();
 }

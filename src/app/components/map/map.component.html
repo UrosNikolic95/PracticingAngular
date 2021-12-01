@@ -2,7 +2,7 @@
 
 <app-worker
   *ngFor="let item of workers"
-  [top]="item.top"
-  [left]="item.left"
+  [left]="item.location.x"
+  [top]="item.location.y"
   [@move]="item.move"
 ></app-worker>

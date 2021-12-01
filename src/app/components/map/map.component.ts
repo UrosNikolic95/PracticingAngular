@@ -10,6 +10,7 @@ import { interval } from 'rxjs';
 import {
   FactoryModel,
   MoveParams,
+  Point,
   WorkerModel,
 } from 'src/app/inner-logic/models';
 
@@ -47,43 +48,39 @@ export class MapComponent implements OnInit {
   ngOnInit(): void {
     this.factories = Array.from({ length: 1 }, () => new FactoryModel());
     this.factories.forEach((item) => {
-      item.left = Math.floor(Math.random() * 1000);
-      item.top = Math.floor(Math.random() * 1000);
+      item.location.x = Math.floor(Math.random() * 1000);
+      item.location.y = Math.floor(Math.random() * 1000);
     });
     this.workers = Array.from({ length: 100 }, () => new WorkerModel());
     this.workers.forEach((item) => {
-      item.left = Math.floor(Math.random() * 1000);
-      item.top = Math.floor(Math.random() * 1000);
-      setTimeout(() => {
-        this.randomMove(item);
-      }, 3000);
+      item.location.x = Math.floor(Math.random() * 1000);
+      item.location.y = Math.floor(Math.random() * 1000);
+      this.randomMove(item);
     });
   }
 
   randomMove(item: WorkerModel, callback?: () => void): WorkerModel {
-    const leftEnd = Math.floor(Math.random() * 1000);
-    const topEnd = Math.floor(Math.random() * 1000);
+    const goTo = new Point();
+    goTo.x = Math.floor(Math.random() * 1000);
+    goTo.y = Math.floor(Math.random() * 1000);
     item.move = this.moveTrigger(
-      item.top,
-      item.left,
-      topEnd,
-      leftEnd,
-      this.length(item.top, item.left, topEnd, leftEnd) * 3,
+      item.location,
+      goTo,
+      this.length(item.location, goTo) * 3,
       () => this.randomMove(item)
     );
-    item.left = leftEnd;
-    item.top = topEnd;
+    item.location = goTo;
     return item;
   }
 
   moveTrigger(
-    x1: number,
-    y1: number,
-    x2: number,
-    y2: number,
+    A: Point,
+    B: Point,
     milliseconds: number,
     callback?: () => void
   ): MoveParams {
+    const { x: x1, y: y1 } = A;
+    const { x: x2, y: y2 } = B;
     const lengtUnit = 'px';
     const timeUnit = 'ms';
     if (callback) setTimeout(callback, milliseconds);
@@ -99,7 +96,9 @@ export class MapComponent implements OnInit {
     };
   }
 
-  length(x1: number, y1: number, x2: number, y2: number): number {
+  length(A: Point, B: Point): number {
+    const { x: x1, y: y1 } = A;
+    const { x: x2, y: y2 } = B;
     return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
   }
 }
