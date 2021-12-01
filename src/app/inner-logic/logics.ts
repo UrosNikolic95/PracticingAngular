@@ -1,5 +1,6 @@
 import {
   ConsumptionItemData,
+  InventoryData,
   ProductionData,
   ProductionItemData,
 } from './models';
@@ -22,7 +23,7 @@ function GenerateConsumption(resources: string[]): ProductionData {
   resources.forEach((producedResource) => {
     const row = new ProductionItemData();
     resources.forEach((consumedResource) => {
-      row.consumption[consumedResource] = Math.random() * 10;
+      row.consumptionQuantity[consumedResource] = Math.random() * 10;
     });
     productionData[producedResource] = row;
   });
@@ -35,7 +36,7 @@ function GetTotalConsumption(
   const produced = Object.keys(productionData);
   const total = new ConsumptionItemData();
   produced.forEach((producedResource) => {
-    const consumption = productionData[producedResource].consumption;
+    const consumption = productionData[producedResource].consumptionQuantity;
     const consumed = Object.keys(consumption);
     consumed.forEach((consumedResource) => {
       if (!total[consumedResource]) {
@@ -54,7 +55,50 @@ function SetProduction(
 ): void {
   const produced = Object.keys(productionData);
   produced.forEach((producedResource) => {
-    productionData[producedResource].production =
+    productionData[producedResource].productionQuantity =
       total[producedResource] * productionCoeficiant;
   });
+}
+
+export function Produce(
+  production: ProductionItemData,
+  inventory: InventoryData
+) {
+  if (CheckRequirements(production, inventory)) {
+    ProductionChange(production, inventory);
+  }
+}
+
+function CheckRequirements(
+  production: ProductionItemData,
+  inventory: InventoryData
+): boolean {
+  const consumedResources = Object.keys(production.consumptionQuantity);
+  return consumedResources.every((resource) => {
+    return (
+      inventory.consumption[resource] &&
+      production.consumptionQuantity[resource] &&
+      inventory.consumption[resource].quantity <=
+        production.consumptionQuantity[resource]
+    );
+  });
+}
+
+function ProductionChange(
+  production: ProductionItemData,
+  inventory: InventoryData
+): void {
+  const consumedResources = Object.keys(production.consumptionQuantity);
+  let totalCost = 0;
+  consumedResources.forEach((resource) => {
+    const recordItem = inventory.consumption[resource];
+    const { quantity, cost } = recordItem;
+    const consumedQuantity = production.consumptionQuantity[resource];
+    const pricePart = consumedQuantity * (cost / quantity);
+    recordItem.quantity -= consumedQuantity;
+    recordItem.cost -= pricePart;
+    totalCost += pricePart;
+  });
+  inventory.production.quantity += production.productionQuantity;
+  inventory.production.cost += totalCost;
 }

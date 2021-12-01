@@ -32,8 +32,9 @@ export class ProductionData {
 }
 
 export class ProductionItemData {
-  production = 0;
-  consumption = new ConsumptionItemData();
+  producesResource = '';
+  productionQuantity = 0;
+  consumptionQuantity = new ConsumptionItemData();
 }
 
 export class ConsumptionItemData {
@@ -42,15 +43,15 @@ export class ConsumptionItemData {
 
 export class InventoryData {
   producesResource = '';
-  production = new ConsumptionRecordItem();
-  consumption = new ConsumptionRecord();
+  production = new RecordItem();
+  consumption = new RecordItemSet();
 }
 
-export class ConsumptionRecord {
-  [resource: string]: ConsumptionRecordItem;
+export class RecordItemSet {
+  [resource: string]: RecordItem;
 }
 
-export class ConsumptionRecordItem {
+export class RecordItem {
   quantity = 0;
-  spent = 0;
+  cost = 0;
 }
