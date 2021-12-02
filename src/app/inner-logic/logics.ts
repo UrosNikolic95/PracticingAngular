@@ -1,8 +1,10 @@
 import {
   ConsumptionItemData,
+  FactoryModel,
   InventoryData,
   ProductionData,
   ProductionLineData,
+  WorkerModel,
 } from './models';
 
 export function GenerateProductionData(
@@ -60,19 +62,15 @@ function SetProduction(
   });
 }
 
-export function Produce(
-  productionLineData: ProductionLineData,
-  inventoryData: InventoryData
-) {
-  if (CheckRequirements(productionLineData, inventoryData)) {
-    ProductionChange(productionLineData, inventoryData);
+export function Produce(factory: FactoryModel, worker: WorkerModel) {
+  if (CheckRequirements(factory)) {
+    ProductionChange(factory);
+    worker.wallet += factory.offeredPaycheck;
   }
 }
 
-function CheckRequirements(
-  productionLineData: ProductionLineData,
-  inventoryData: InventoryData
-): boolean {
+function CheckRequirements(factory: FactoryModel): boolean {
+  const { productionLineData, inventoryData } = factory;
   const consumedResources = Object.keys(productionLineData.consumptionQuantity);
   return consumedResources.every((resource) => {
     return (
@@ -84,10 +82,8 @@ function CheckRequirements(
   });
 }
 
-function ProductionChange(
-  productionLineData: ProductionLineData,
-  inventoryData: InventoryData
-): void {
+function ProductionChange(factory: FactoryModel): void {
+  const { productionLineData, inventoryData } = factory;
   const consumedResources = Object.keys(productionLineData.consumptionQuantity);
   let totalCost = 0;
   consumedResources.forEach((resource) => {
@@ -99,6 +95,7 @@ function ProductionChange(
     recordItem.cost -= resourcePrice;
     totalCost += resourcePrice;
   });
+  totalCost += factory.offeredPaycheck;
   inventoryData.production.quantity += productionLineData.productionQuantity;
   inventoryData.production.cost += totalCost;
 }

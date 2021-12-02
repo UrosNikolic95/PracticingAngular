@@ -10,6 +10,8 @@ export class FactoryModel {
 export class WorkerModel {
   location = new Point();
   move = new MoveParams();
+  wallet = 0;
+  resources = new RecordItemSet();
 }
 
 export class MoveParams {
