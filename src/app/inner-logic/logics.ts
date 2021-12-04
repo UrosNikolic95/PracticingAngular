@@ -173,17 +173,15 @@ export function length(A: Point, B: Point): number {
   return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 }
 
-export function moveTrigger(
+export function GetMoveParams(
   A: Point,
   B: Point,
-  milliseconds: number,
-  callback?: () => void
+  milliseconds: number
 ): MoveParams {
   const { x: x1, y: y1 } = A;
   const { x: x2, y: y2 } = B;
   const lengtUnit = 'px';
   const timeUnit = 'ms';
-  if (callback) setTimeout(callback, milliseconds + 2000);
   return {
     value: Date.now(), //every time this changes animation is played
     params: {
