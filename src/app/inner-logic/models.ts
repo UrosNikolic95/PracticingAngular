@@ -1,4 +1,9 @@
 export class FactoryModel {
+  static allFactories: FactoryModel[] = [];
+  constructor() {
+    FactoryModel.allFactories.push(this);
+  }
+
   location = new Point();
   producesResource = '';
   offeredPaycheck = 0;
@@ -8,6 +13,11 @@ export class FactoryModel {
 }
 
 export class WorkerModel {
+  static allWorkers: WorkerModel[] = [];
+  constructor() {
+    WorkerModel.allWorkers.push(this);
+  }
+
   location = new Point();
   move = new MoveParams();
   wallet = 0;

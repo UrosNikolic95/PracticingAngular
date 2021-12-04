@@ -7,6 +7,8 @@ import {
   WorkerModel,
   RecordItemSetData,
   RecordItemData,
+  Point,
+  MoveParams,
 } from './models';
 
 export function GenerateProductionData(
@@ -142,4 +144,54 @@ export function CalculateRecordItemSetCost(
   return resources.reduce((previous, current) => {
     return previous + recordItemSet[current].cost;
   }, 0);
+}
+
+export function ChooseJob(worker: WorkerModel): void {
+  const factoriesWithJobs = FactoryModel.allFactories.filter((factory) =>
+    CheckRequirements(factory)
+  );
+  const factoryWithMaxPaycheck =
+    FindFactoryWIthMaximumPayceck(factoriesWithJobs);
+}
+
+function FindFactoryWIthMaximumPayceck(
+  factories: FactoryModel[]
+): FactoryModel | null {
+  if (!factories || factories.length) return null;
+  return factories.reduce((previous, current) => {
+    if (previous.offeredPaycheck < current.offeredPaycheck) {
+      return current;
+    } else {
+      return previous;
+    }
+  }, factories[0]);
+}
+
+export function length(A: Point, B: Point): number {
+  const { x: x1, y: y1 } = A;
+  const { x: x2, y: y2 } = B;
+  return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+}
+
+export function moveTrigger(
+  A: Point,
+  B: Point,
+  milliseconds: number,
+  callback?: () => void
+): MoveParams {
+  const { x: x1, y: y1 } = A;
+  const { x: x2, y: y2 } = B;
+  const lengtUnit = 'px';
+  const timeUnit = 'ms';
+  if (callback) setTimeout(callback, milliseconds + 2000);
+  return {
+    value: Date.now(), //every time this changes animation is played
+    params: {
+      time: milliseconds + timeUnit,
+      topStart: y1 + lengtUnit,
+      topEnd: y2 + lengtUnit,
+      leftStart: x1 + lengtUnit,
+      leftEnd: x2 + lengtUnit,
+    },
+  };
 }

@@ -7,6 +7,7 @@ import {
 } from '@angular/animations';
 import { Component, OnInit } from '@angular/core';
 import { interval } from 'rxjs';
+import { length, moveTrigger } from 'src/app/inner-logic/logics';
 import {
   FactoryModel,
   MoveParams,
@@ -63,42 +64,13 @@ export class MapComponent implements OnInit {
     const goTo = new Point();
     goTo.x = Math.floor(Math.random() * 1000);
     goTo.y = Math.floor(Math.random() * 1000);
-    item.move = this.moveTrigger(
+    item.move = moveTrigger(
       item.location,
       goTo,
-      this.length(item.location, goTo) * 3,
+      length(item.location, goTo) * 3,
       () => this.randomMove(item)
     );
     item.location = goTo;
     return item;
-  }
-
-  moveTrigger(
-    A: Point,
-    B: Point,
-    milliseconds: number,
-    callback?: () => void
-  ): MoveParams {
-    const { x: x1, y: y1 } = A;
-    const { x: x2, y: y2 } = B;
-    const lengtUnit = 'px';
-    const timeUnit = 'ms';
-    if (callback) setTimeout(callback, milliseconds + 2000);
-    return {
-      value: Date.now(), //every time this changes animation is played
-      params: {
-        time: milliseconds + timeUnit,
-        topStart: y1 + lengtUnit,
-        topEnd: y2 + lengtUnit,
-        leftStart: x1 + lengtUnit,
-        leftEnd: x2 + lengtUnit,
-      },
-    };
-  }
-
-  length(A: Point, B: Point): number {
-    const { x: x1, y: y1 } = A;
-    const { x: x2, y: y2 } = B;
-    return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
   }
 }
