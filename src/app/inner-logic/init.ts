@@ -4,8 +4,7 @@ import { FactoryModel, Point } from './models';
 
 export function GenerateRandomFactories(): void {
   const productionData = GenerateProductionData();
-  const resources = Object.keys(productionData);
-  resources.forEach((resource) => {
+  Object.keys(productionData).forEach((resource) => {
     Array.from(
       {
         length: 10, //generate 10 factories per each resource
@@ -26,8 +25,8 @@ export function GenerateRandomFactories(): void {
 
 export function CreateRandomLocation(): Point {
   const location = new Point();
-  location.x = Math.random() * initData.mapWidth;
-  location.y = Math.random() * initData.mapHeight;
+  location.x = Math.floor(Math.random() * initData.mapWidth);
+  location.y = Math.floor(Math.random() * initData.mapHeight);
   return location;
 }
 
