@@ -1,3 +1,4 @@
+import { initData } from './init.data';
 import {
   QuantityData,
   FactoryModel,
@@ -9,29 +10,32 @@ import {
   RecordItemData,
   Point,
   MoveParams,
+  InitFactories,
 } from './models';
 
-export function GenerateProductionData(
-  numberOfResources: number,
-  productionCoeficiant: number
-): ProductionData {
-  const resources = Array.from({ length: numberOfResources }, (item, index) => {
-    return 'resource' + index;
-  });
+export function GenerateProductionData(): ProductionData {
+  const resources = Array.from(
+    { length: initData.numberOfResouces },
+    (item, index) => {
+      return 'resource' + index;
+    }
+  );
   const productionData = GenerateConsumption(resources);
   const totalConsumption = GetTotalConsumption(productionData);
-  SetProduction(productionData, totalConsumption, productionCoeficiant);
+  SetProduction(productionData, totalConsumption);
   return productionData;
 }
 
 function GenerateConsumption(resources: string[]): ProductionData {
   const productionData = new ProductionData();
   resources.forEach((producedResource) => {
-    const row = new ProductionLineData();
+    const newProductionLineData = new ProductionLineData();
     resources.forEach((consumedResource) => {
-      row.consumptionQuantity[consumedResource] = Math.random() * 10;
+      newProductionLineData.consumptionQuantity[consumedResource] = Math.ceil(
+        Math.random() * 10
+      );
     });
-    productionData[producedResource] = row;
+    productionData[producedResource] = newProductionLineData;
   });
   return productionData;
 }
@@ -41,8 +45,8 @@ function GetTotalConsumption(productionData: ProductionData): QuantityData {
   const total = new QuantityData();
   produced.forEach((producedResource) => {
     const consumption = productionData[producedResource].consumptionQuantity;
-    const consumed = Object.keys(consumption);
-    consumed.forEach((consumedResource) => {
+    const consumedResources = Object.keys(consumption);
+    consumedResources.forEach((consumedResource) => {
       if (!total[consumedResource]) {
         total[consumedResource] = 0;
       }
@@ -54,13 +58,12 @@ function GetTotalConsumption(productionData: ProductionData): QuantityData {
 
 function SetProduction(
   productionData: ProductionData,
-  total: QuantityData,
-  productionCoeficiant: number
+  total: QuantityData
 ): void {
   const produced = Object.keys(productionData);
   produced.forEach((producedResource) => {
     productionData[producedResource].productionQuantity =
-      total[producedResource] * productionCoeficiant;
+      total[producedResource] * initData.productionCoeficiant;
   });
 }
 
@@ -151,10 +154,21 @@ export function ChooseJob(worker: WorkerModel): void {
     CheckRequirements(factory)
   );
   const factoryWithMaxPaycheck =
-    FindFactoryWIthMaximumPayceck(factoriesWithJobs);
+    FindFactoryWIthMaximumPaycheck(factoriesWithJobs);
+  if (!factoryWithMaxPaycheck) return;
+  const taken = TakeManyResources(
+    factoryWithMaxPaycheck.inventoryData,
+    factoryWithMaxPaycheck.productionLineData.consumptionQuantity
+  );
+  const cost = CalculateRecordItemSetCost(taken);
+  MoveWorker(worker, factoryWithMaxPaycheck.location, () => {
+    setTimeout(() => {
+      worker.wallet += cost;
+    }, 1000);
+  });
 }
 
-function FindFactoryWIthMaximumPayceck(
+function FindFactoryWIthMaximumPaycheck(
   factories: FactoryModel[]
 ): FactoryModel | null {
   if (!factories || factories.length) return null;
@@ -173,13 +187,24 @@ export function length(A: Point, B: Point): number {
   return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 }
 
+export function MoveWorker(
+  worker: WorkerModel,
+  to: Point,
+  callback?: () => void
+): void {
+  const from = worker.location;
+  const milliseconds = length(from, to);
+  worker.move = GetMoveParams(from, to, milliseconds); //every time move field changes worker is trigering animation
+  if (callback) setTimeout(callback, milliseconds);
+}
+
 export function GetMoveParams(
-  A: Point,
-  B: Point,
+  form: Point,
+  to: Point,
   milliseconds: number
 ): MoveParams {
-  const { x: x1, y: y1 } = A;
-  const { x: x2, y: y2 } = B;
+  const { x: x1, y: y1 } = form;
+  const { x: x2, y: y2 } = to;
   const lengtUnit = 'px';
   const timeUnit = 'ms';
   return {

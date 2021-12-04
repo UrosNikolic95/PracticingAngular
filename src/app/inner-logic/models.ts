@@ -68,3 +68,10 @@ export class RecordItemData {
   quantity = 0;
   cost = 0;
 }
+
+export class InitFactories {
+  numberOfResources = 10;
+  productionCoeficiant = 1.5;
+}
+
+export class InitMap {}
