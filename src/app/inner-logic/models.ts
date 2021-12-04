@@ -10,6 +10,8 @@ export class FactoryModel {
   offeredPrice = 0;
   productionLineData = new ProductionLineData();
   inventoryData = new FactoryInventoryData();
+  maxWorkers = 1;
+  currentWorkers = 0;
 }
 
 export class WorkerModel {

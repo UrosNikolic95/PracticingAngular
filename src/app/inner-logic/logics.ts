@@ -133,7 +133,6 @@ export function CalculatePart(
   const { quantity, cost } = recordItem;
   if (!quantity) return new RecordItemData();
 
-  console.log('current', cost, quantity);
   const resourcePrice = Math.min(
     Math.ceil(quantityTaken * (cost / quantity)),
     cost
@@ -143,7 +142,6 @@ export function CalculatePart(
 
   takenRecordItem.quantity = quantityTaken;
   takenRecordItem.cost = resourcePrice;
-  console.log('taken', resourcePrice, quantityTaken);
   return takenRecordItem;
 }
 
@@ -157,33 +155,29 @@ export function CalculateRecordItemSetCost(
 }
 
 export function ChooseJob(worker: WorkerModel): void {
-  const factoriesWithJobs = FactoryModel.allFactories;
-  // FactoryModel.allFactories
-  // .filter((factory) =>
-  //   CheckRequirements(factory)
-  // );
-  // console.log('factoriesWithJobs', factoriesWithJobs);
+  const withReq = FactoryModel.allFactories.filter(
+    (factory) =>
+      CheckRequirements(factory) && factory.currentWorkers < factory.maxWorkers
+  );
+  const factoriesWithJobs = withReq.length
+    ? withReq
+    : FactoryModel.allFactories;
   const factoryWithMaxPaycheck =
     FindFactoryWithMaximumPaycheck(factoriesWithJobs);
-  // console.log('factoryWithMaxPaycheck', factoryWithMaxPaycheck);
   if (!factoryWithMaxPaycheck) return;
+  factoryWithMaxPaycheck.currentWorkers++;
   const taken = TakeManyResources(
     factoryWithMaxPaycheck.inventoryData,
     factoryWithMaxPaycheck.productionLineData.consumptionQuantity
   );
-  // console.log('taken', taken);
-  // console.log(
-  //   'factoryWithMaxPaycheck.inventoryData',
-  //   factoryWithMaxPaycheck.inventoryData
-  // );
   const cost = CalculateRecordItemSetCost(taken);
-  // console.log('cost', cost);
   MoveWorker(worker, factoryWithMaxPaycheck.location, () => {
     setTimeout(() => {
       factoryWithMaxPaycheck.inventoryData.production.quantity +=
         factoryWithMaxPaycheck.productionLineData.productionQuantity;
       factoryWithMaxPaycheck.inventoryData.production.cost += cost;
       worker.wallet += factoryWithMaxPaycheck.offeredPaycheck;
+      factoryWithMaxPaycheck.currentWorkers--;
       BuyResource(worker);
     }, 2000);
   });

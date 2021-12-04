@@ -41,7 +41,7 @@ export function GenerateFactoryInventory(factory: FactoryModel): void {
     (resource) => {
       factory.inventoryData.consumption[resource] = new RecordItemData();
       factory.inventoryData.consumption[resource].quantity =
-        factory.productionLineData.consumptionQuantity[resource] * 5;
+        factory.productionLineData.consumptionQuantity[resource] * 50;
       factory.inventoryData.consumption[resource].cost = 200;
     }
   );
