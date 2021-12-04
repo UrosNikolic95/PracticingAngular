@@ -1,6 +1,10 @@
 import { initData } from './init.data';
-import { CalculateRecordItemSetCost, GenerateProductionData } from './logics';
-import { FactoryModel, Point } from './models';
+import {
+  allResources,
+  CalculateRecordItemSetCost,
+  GenerateProductionData,
+} from './logics';
+import { FactoryModel, Point, WorkerModel } from './models';
 
 export function GenerateRandomFactories(): void {
   const productionData = GenerateProductionData();
@@ -34,8 +38,26 @@ export function GenerateFactoryInventory(factory: FactoryModel): void {
   const resources = Object.keys(factory.productionLineData.consumptionQuantity);
   resources.forEach((resource) => {
     factory.inventoryData.consumption[resource].quantity = 1000;
-    factory.inventoryData.consumption[resource].cost = 100000;
+    factory.inventoryData.consumption[resource].cost = RandomIntBetween(
+      100000,
+      200000
+    );
   });
   factory.inventoryData.production.quantity = 1000;
-  factory.inventoryData.production.cost = 100000;
+  factory.inventoryData.production.cost = RandomIntBetween(100000, 200000);
+}
+
+export function InitWorkerInventory(): void {
+  WorkerModel.allWorkers.forEach((worker) => {
+    allResources.forEach((resource) => {
+      worker.inventory[resource].quantity = RandomIntBetween(100, 200);
+      worker.inventory[resource].cost = RandomIntBetween(100, 200);
+    });
+  });
+}
+
+export function RandomIntBetween(from: number, to: number) {
+  const max = Math.max(from, to);
+  const min = Math.min(from, to);
+  return from + Math.floor(Math.random() * (max - min));
 }

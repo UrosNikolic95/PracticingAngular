@@ -1,8 +1,9 @@
+import { worker } from 'cluster';
 import { initData } from './init.data';
 import {
   QuantityData,
   FactoryModel,
-  InventoryData,
+  FactoryInventoryData,
   ProductionData,
   ProductionLineData,
   WorkerModel,
@@ -10,17 +11,17 @@ import {
   RecordItemData,
   Point,
   MoveParams,
-  InitFactories,
 } from './models';
 
+export const allResources: string[] = Array.from(
+  { length: initData.numberOfResouces },
+  (item, index) => {
+    return 'resource' + index;
+  }
+);
+
 export function GenerateProductionData(): ProductionData {
-  const resources = Array.from(
-    { length: initData.numberOfResouces },
-    (item, index) => {
-      return 'resource' + index;
-    }
-  );
-  const productionData = GenerateConsumption(resources);
+  const productionData = GenerateConsumption(allResources);
   const totalConsumption = GetTotalConsumption(productionData);
   SetProduction(productionData, totalConsumption);
   return productionData;
@@ -45,8 +46,7 @@ function GetTotalConsumption(productionData: ProductionData): QuantityData {
   const total = new QuantityData();
   produced.forEach((producedResource) => {
     const consumption = productionData[producedResource].consumptionQuantity;
-    const consumedResources = Object.keys(consumption);
-    consumedResources.forEach((consumedResource) => {
+    Object.keys(consumption).forEach((consumedResource) => {
       if (!total[consumedResource]) {
         total[consumedResource] = 0;
       }
@@ -80,15 +80,16 @@ export function Produce(factory: FactoryModel, worker: WorkerModel) {
 
 function CheckRequirements(factory: FactoryModel): boolean {
   const { productionLineData, inventoryData } = factory;
-  const consumedResources = Object.keys(productionLineData.consumptionQuantity);
-  return consumedResources.every((resource) => {
-    return (
-      inventoryData.consumption[resource] &&
-      productionLineData.consumptionQuantity[resource] &&
-      inventoryData.consumption[resource].quantity <=
-        productionLineData.consumptionQuantity[resource]
-    );
-  });
+  return Object.keys(productionLineData.consumptionQuantity).every(
+    (resource) => {
+      return (
+        inventoryData.consumption[resource] &&
+        productionLineData.consumptionQuantity[resource] &&
+        inventoryData.consumption[resource].quantity <=
+          productionLineData.consumptionQuantity[resource]
+      );
+    }
+  );
 }
 
 export function ProductionChange(factory: FactoryModel): void {
@@ -110,14 +111,13 @@ export function ProductionChange(factory: FactoryModel): void {
 }
 
 export function TakeManyResources(
-  inventoryData: InventoryData,
+  inventoryData: FactoryInventoryData,
   quantityData: QuantityData
 ): RecordItemSetData {
-  const resources = Object.keys(quantityData.consumption);
   const recordItemSet = new RecordItemSetData();
-  resources.forEach((resource) => {
-    const consumptionRecordItem = inventoryData.consumption[resource];
+  Object.keys(quantityData).forEach((resource) => {
     const consumedQuantity = quantityData[resource];
+    const consumptionRecordItem = inventoryData.consumption[resource];
     recordItemSet[resource] = TakeSingleResource(
       consumedQuantity,
       consumptionRecordItem
@@ -130,13 +130,36 @@ export function TakeSingleResource(
   quantityTaken: number,
   recordItem: RecordItemData
 ): RecordItemData {
+  const taken = CalculatePart(quantityTaken, recordItem);
+  SubtractRecordItem(recordItem, taken);
+  return taken;
+}
+
+export function SubtractRecordItem(A: RecordItemData, B: RecordItemData) {
+  A.quantity -= B.quantity;
+  A.cost -= B.cost;
+}
+
+export function AddRecordItem(A: RecordItemData, B: RecordItemData) {
+  A.quantity += B.quantity;
+  A.cost += B.cost;
+}
+
+export function CalculatePart(
+  quantityTaken: number,
+  recordItem: RecordItemData
+): RecordItemData {
   const { quantity, cost } = recordItem;
-  const resourcePrice = Math.ceil(quantityTaken * (cost / quantity));
-  recordItem.cost -= resourcePrice;
-  recordItem.quantity -= quantityTaken;
+  const resourcePrice = Math.min(
+    Math.ceil(quantityTaken * (cost / quantity)),
+    cost
+  );
+
   const takenRecordItem = new RecordItemData();
-  takenRecordItem.cost = resourcePrice;
+
   takenRecordItem.quantity = quantityTaken;
+  takenRecordItem.cost = resourcePrice;
+
   return takenRecordItem;
 }
 
@@ -154,7 +177,7 @@ export function ChooseJob(worker: WorkerModel): void {
     CheckRequirements(factory)
   );
   const factoryWithMaxPaycheck =
-    FindFactoryWIthMaximumPaycheck(factoriesWithJobs);
+    FindFactoryWithMaximumPaycheck(factoriesWithJobs);
   if (!factoryWithMaxPaycheck) return;
   const taken = TakeManyResources(
     factoryWithMaxPaycheck.inventoryData,
@@ -163,12 +186,53 @@ export function ChooseJob(worker: WorkerModel): void {
   const cost = CalculateRecordItemSetCost(taken);
   MoveWorker(worker, factoryWithMaxPaycheck.location, () => {
     setTimeout(() => {
-      worker.wallet += cost;
+      factoryWithMaxPaycheck.inventoryData.production.quantity +=
+        factoryWithMaxPaycheck.productionLineData.productionQuantity;
+      factoryWithMaxPaycheck.inventoryData.production.cost += cost;
+      worker.wallet += factoryWithMaxPaycheck.offeredPaycheck;
+      BuyResource(worker);
     }, 1000);
   });
 }
 
-function FindFactoryWIthMaximumPaycheck(
+export function BuyResource(worker: WorkerModel): void {
+  const resource = FindResourceWithSmallestQuantity(worker);
+  const seller = FindFactoryWithMinimumCost(resource);
+  MoveWorker(worker, seller.location, () => {
+    worker.wallet -= seller.offeredPrice;
+    const bougth = TakeSingleResource(1, seller.inventoryData.production);
+    AddRecordItem(worker.inventory[resource], bougth);
+    ChooseJob(worker);
+  });
+}
+
+export function FindFactoryWithMinimumCost(resource: string) {
+  return FactoryModel.allFactories
+    .filter((factory) => factory.producesResource == resource)
+    .reduce((previous, current) => {
+      if (previous.offeredPrice < current.offeredPrice) {
+        return previous;
+      } else {
+        return current;
+      }
+    }, FactoryModel.allFactories[0]);
+}
+
+export function FindResourceWithSmallestQuantity(worker: WorkerModel): string {
+  const resources = Object.keys(worker.inventory);
+  return resources.reduce((previousResource, currentResource) => {
+    if (
+      worker.inventory[previousResource].quantity <
+      worker.inventory[currentResource].quantity
+    ) {
+      return previousResource;
+    } else {
+      return currentResource;
+    }
+  }, resources[0]);
+}
+
+function FindFactoryWithMaximumPaycheck(
   factories: FactoryModel[]
 ): FactoryModel | null {
   if (!factories || factories.length) return null;
