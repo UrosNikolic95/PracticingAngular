@@ -2,9 +2,10 @@ import { initData } from './init.data';
 import {
   allResources,
   CalculateRecordItemSetCost,
+  ChooseJob,
   GenerateProductionData,
 } from './logics';
-import { FactoryModel, Point, WorkerModel } from './models';
+import { FactoryModel, Point, RecordItemData, WorkerModel } from './models';
 
 export function GenerateRandomFactories(): void {
   const productionData = GenerateProductionData();
@@ -35,21 +36,34 @@ export function CreateRandomLocation(): Point {
 }
 
 export function GenerateFactoryInventory(factory: FactoryModel): void {
-  const resources = Object.keys(factory.productionLineData.consumptionQuantity);
-  resources.forEach((resource) => {
-    factory.inventoryData.consumption[resource].quantity = 1000;
-    factory.inventoryData.consumption[resource].cost = RandomIntBetween(
-      100000,
-      200000
-    );
-  });
+  Object.keys(factory.productionLineData.consumptionQuantity).forEach(
+    (resource) => {
+      factory.inventoryData.consumption[resource] = new RecordItemData();
+      factory.inventoryData.consumption[resource].quantity = 1000;
+      factory.inventoryData.consumption[resource].cost = RandomIntBetween(
+        100000,
+        200000
+      );
+    }
+  );
   factory.inventoryData.production.quantity = 1000;
   factory.inventoryData.production.cost = RandomIntBetween(100000, 200000);
+}
+
+export function GenerateRandomWorkers(): void {
+  Array.from({ length: 100 }, () => new WorkerModel());
+  InitWorkerInventory();
+  WorkerModel.allWorkers.forEach((worker) => {
+    worker.location.x = Math.floor(Math.random() * 1000);
+    worker.location.y = Math.floor(Math.random() * 1000);
+    ChooseJob(worker);
+  });
 }
 
 export function InitWorkerInventory(): void {
   WorkerModel.allWorkers.forEach((worker) => {
     allResources.forEach((resource) => {
+      worker.inventory[resource] = new RecordItemData();
       worker.inventory[resource].quantity = RandomIntBetween(100, 200);
       worker.inventory[resource].cost = RandomIntBetween(100, 200);
     });

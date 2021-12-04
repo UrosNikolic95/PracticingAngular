@@ -1,4 +1,3 @@
-import { worker } from 'cluster';
 import { initData } from './init.data';
 import {
   QuantityData,
@@ -197,7 +196,7 @@ export function ChooseJob(worker: WorkerModel): void {
 
 export function BuyResource(worker: WorkerModel): void {
   const resource = FindResourceWithSmallestQuantity(worker);
-  const seller = FindFactoryWithMinimumCost(resource);
+  const seller = FindFactoryWithMinimumOfferedPrice(resource);
   MoveWorker(worker, seller.location, () => {
     worker.wallet -= seller.offeredPrice;
     const bougth = TakeSingleResource(1, seller.inventoryData.production);
@@ -206,16 +205,17 @@ export function BuyResource(worker: WorkerModel): void {
   });
 }
 
-export function FindFactoryWithMinimumCost(resource: string) {
-  return FactoryModel.allFactories
-    .filter((factory) => factory.producesResource == resource)
-    .reduce((previous, current) => {
-      if (previous.offeredPrice < current.offeredPrice) {
-        return previous;
-      } else {
-        return current;
-      }
-    }, FactoryModel.allFactories[0]);
+export function FindFactoryWithMinimumOfferedPrice(resource: string) {
+  const filtered = FactoryModel.allFactories.filter(
+    (factory) => factory.producesResource == resource
+  );
+  return filtered.reduce((previous, current) => {
+    if (previous.offeredPrice < current.offeredPrice) {
+      return previous;
+    } else {
+      return current;
+    }
+  }, filtered[0]);
 }
 
 export function FindResourceWithSmallestQuantity(worker: WorkerModel): string {

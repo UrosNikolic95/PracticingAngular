@@ -30,11 +30,11 @@ export class MoveParams {
 }
 
 export class Params {
-  time = ''; //example: 100ms string
-  topStart = ''; //example: 100px string
-  topEnd = ''; //example: 100px string
-  leftStart = ''; //example: 100px string
-  leftEnd = ''; //example: 100px string
+  time = '0ms'; //example: 100ms string
+  topStart = '0px'; //example: 100px string
+  topEnd = '0px'; //example: 100px string
+  leftStart = '0px'; //example: 100px string
+  leftEnd = '0px'; //example: 100px string
 }
 
 export class Point {

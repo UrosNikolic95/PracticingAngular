@@ -7,6 +7,10 @@ import {
 } from '@angular/animations';
 import { Component, OnInit } from '@angular/core';
 import { interval } from 'rxjs';
+import {
+  GenerateRandomFactories,
+  GenerateRandomWorkers,
+} from 'src/app/inner-logic/init';
 import { length, GetMoveParams } from 'src/app/inner-logic/logics';
 import {
   FactoryModel,
@@ -47,16 +51,12 @@ export class MapComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {
-    this.factories = Array.from({ length: 1 }, () => new FactoryModel());
-    this.factories.forEach((item) => {
-      item.location.x = Math.floor(Math.random() * 1000);
-      item.location.y = Math.floor(Math.random() * 1000);
-    });
-    this.workers = Array.from({ length: 100 }, () => new WorkerModel());
-    this.workers.forEach((item) => {
-      item.location.x = Math.floor(Math.random() * 1000);
-      item.location.y = Math.floor(Math.random() * 1000);
-      this.randomMove(item);
+    GenerateRandomFactories();
+    this.factories = FactoryModel.allFactories;
+    GenerateRandomWorkers();
+    this.workers = WorkerModel.allWorkers;
+    this.workers.forEach((w) => {
+      console.log(w.move);
     });
   }
 
