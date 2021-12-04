@@ -1,10 +1,12 @@
 import {
-  ConsumptionItemData,
+  QuantityData,
   FactoryModel,
   InventoryData,
   ProductionData,
   ProductionLineData,
   WorkerModel,
+  RecordItemSetData,
+  RecordItemData,
 } from './models';
 
 export function GenerateProductionData(
@@ -32,11 +34,9 @@ function GenerateConsumption(resources: string[]): ProductionData {
   return productionData;
 }
 
-function GetTotalConsumption(
-  productionData: ProductionData
-): ConsumptionItemData {
+function GetTotalConsumption(productionData: ProductionData): QuantityData {
   const produced = Object.keys(productionData);
-  const total = new ConsumptionItemData();
+  const total = new QuantityData();
   produced.forEach((producedResource) => {
     const consumption = productionData[producedResource].consumptionQuantity;
     const consumed = Object.keys(consumption);
@@ -52,7 +52,7 @@ function GetTotalConsumption(
 
 function SetProduction(
   productionData: ProductionData,
-  total: ConsumptionItemData,
+  total: QuantityData,
   productionCoeficiant: number
 ): void {
   const produced = Object.keys(productionData);
@@ -64,8 +64,12 @@ function SetProduction(
 
 export function Produce(factory: FactoryModel, worker: WorkerModel) {
   if (CheckRequirements(factory)) {
-    ProductionChange(factory);
-    worker.wallet += factory.offeredPaycheck;
+    const taken = TakeManyResources(
+      factory.inventoryData,
+      factory.productionLineData.consumptionQuantity
+    );
+    const cost = CalculateRecordItemSetCost(taken);
+    worker.wallet += cost;
   }
 }
 
@@ -82,7 +86,7 @@ function CheckRequirements(factory: FactoryModel): boolean {
   });
 }
 
-function ProductionChange(factory: FactoryModel): void {
+export function ProductionChange(factory: FactoryModel): void {
   const { productionLineData, inventoryData } = factory;
   const consumedResources = Object.keys(productionLineData.consumptionQuantity);
   let totalCost = 0;
@@ -90,7 +94,7 @@ function ProductionChange(factory: FactoryModel): void {
     const recordItem = inventoryData.consumption[resource];
     const { quantity, cost } = recordItem;
     const consumedQuantity = productionLineData.consumptionQuantity[resource];
-    const resourcePrice = consumedQuantity * (cost / quantity);
+    const resourcePrice = Math.ceil(consumedQuantity * (cost / quantity));
     recordItem.quantity -= consumedQuantity;
     recordItem.cost -= resourcePrice;
     totalCost += resourcePrice;
@@ -98,4 +102,44 @@ function ProductionChange(factory: FactoryModel): void {
   totalCost += factory.offeredPaycheck;
   inventoryData.production.quantity += productionLineData.productionQuantity;
   inventoryData.production.cost += totalCost;
+}
+
+export function TakeManyResources(
+  inventoryData: InventoryData,
+  quantityData: QuantityData
+): RecordItemSetData {
+  const resources = Object.keys(quantityData.consumption);
+  const recordItemSet = new RecordItemSetData();
+  resources.forEach((resource) => {
+    const consumptionRecordItem = inventoryData.consumption[resource];
+    const consumedQuantity = quantityData[resource];
+    recordItemSet[resource] = TakeSingleResource(
+      consumedQuantity,
+      consumptionRecordItem
+    );
+  });
+  return recordItemSet;
+}
+
+export function TakeSingleResource(
+  quantityTaken: number,
+  recordItem: RecordItemData
+): RecordItemData {
+  const { quantity, cost } = recordItem;
+  const resourcePrice = Math.ceil(quantityTaken * (cost / quantity));
+  recordItem.cost -= resourcePrice;
+  recordItem.quantity -= quantityTaken;
+  const takenRecordItem = new RecordItemData();
+  takenRecordItem.cost = resourcePrice;
+  takenRecordItem.quantity = quantityTaken;
+  return takenRecordItem;
+}
+
+export function CalculateRecordItemSetCost(
+  recordItemSet: RecordItemSetData
+): number {
+  const resources = Object.keys(recordItemSet);
+  return resources.reduce((previous, current) => {
+    return previous + recordItemSet[current].cost;
+  }, 0);
 }

@@ -11,7 +11,7 @@ export class WorkerModel {
   location = new Point();
   move = new MoveParams();
   wallet = 0;
-  resources = new RecordItemSet();
+  resources = new RecordItemSetData();
 }
 
 export class MoveParams {
@@ -38,23 +38,23 @@ export class ProductionData {
 
 export class ProductionLineData {
   productionQuantity = 0;
-  consumptionQuantity = new ConsumptionItemData();
+  consumptionQuantity = new QuantityData();
 }
 
-export class ConsumptionItemData {
+export class QuantityData {
   [resource: string]: number;
 }
 
 export class InventoryData {
-  production = new RecordItem();
-  consumption = new RecordItemSet();
+  production = new RecordItemData();
+  consumption = new RecordItemSetData();
 }
 
-export class RecordItemSet {
-  [resource: string]: RecordItem;
+export class RecordItemSetData {
+  [resource: string]: RecordItemData;
 }
 
-export class RecordItem {
+export class RecordItemData {
   quantity = 0;
   cost = 0;
 }
