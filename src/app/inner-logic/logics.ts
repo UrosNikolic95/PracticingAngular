@@ -84,29 +84,11 @@ function CheckRequirements(factory: FactoryModel): boolean {
       return (
         inventoryData.consumption[resource] &&
         productionLineData.consumptionQuantity[resource] &&
-        inventoryData.consumption[resource].quantity <=
+        inventoryData.consumption[resource].quantity >=
           productionLineData.consumptionQuantity[resource]
       );
     }
   );
-}
-
-export function ProductionChange(factory: FactoryModel): void {
-  const { productionLineData, inventoryData } = factory;
-  const consumedResources = Object.keys(productionLineData.consumptionQuantity);
-  let totalCost = 0;
-  consumedResources.forEach((resource) => {
-    const recordItem = inventoryData.consumption[resource];
-    const { quantity, cost } = recordItem;
-    const consumedQuantity = productionLineData.consumptionQuantity[resource];
-    const resourcePrice = Math.ceil(consumedQuantity * (cost / quantity));
-    recordItem.quantity -= consumedQuantity;
-    recordItem.cost -= resourcePrice;
-    totalCost += resourcePrice;
-  });
-  totalCost += factory.offeredPaycheck;
-  inventoryData.production.quantity += productionLineData.productionQuantity;
-  inventoryData.production.cost += totalCost;
 }
 
 export function TakeManyResources(
@@ -149,6 +131,9 @@ export function CalculatePart(
   recordItem: RecordItemData
 ): RecordItemData {
   const { quantity, cost } = recordItem;
+  if (!quantity) return new RecordItemData();
+
+  console.log('current', cost, quantity);
   const resourcePrice = Math.min(
     Math.ceil(quantityTaken * (cost / quantity)),
     cost
@@ -158,7 +143,7 @@ export function CalculatePart(
 
   takenRecordItem.quantity = quantityTaken;
   takenRecordItem.cost = resourcePrice;
-
+  console.log('taken', resourcePrice, quantityTaken);
   return takenRecordItem;
 }
 
@@ -172,17 +157,27 @@ export function CalculateRecordItemSetCost(
 }
 
 export function ChooseJob(worker: WorkerModel): void {
-  const factoriesWithJobs = FactoryModel.allFactories.filter((factory) =>
-    CheckRequirements(factory)
-  );
+  const factoriesWithJobs = FactoryModel.allFactories;
+  // FactoryModel.allFactories
+  // .filter((factory) =>
+  //   CheckRequirements(factory)
+  // );
+  // console.log('factoriesWithJobs', factoriesWithJobs);
   const factoryWithMaxPaycheck =
     FindFactoryWithMaximumPaycheck(factoriesWithJobs);
+  // console.log('factoryWithMaxPaycheck', factoryWithMaxPaycheck);
   if (!factoryWithMaxPaycheck) return;
   const taken = TakeManyResources(
     factoryWithMaxPaycheck.inventoryData,
     factoryWithMaxPaycheck.productionLineData.consumptionQuantity
   );
+  // console.log('taken', taken);
+  // console.log(
+  //   'factoryWithMaxPaycheck.inventoryData',
+  //   factoryWithMaxPaycheck.inventoryData
+  // );
   const cost = CalculateRecordItemSetCost(taken);
+  // console.log('cost', cost);
   MoveWorker(worker, factoryWithMaxPaycheck.location, () => {
     setTimeout(() => {
       factoryWithMaxPaycheck.inventoryData.production.quantity +=
@@ -190,7 +185,7 @@ export function ChooseJob(worker: WorkerModel): void {
       factoryWithMaxPaycheck.inventoryData.production.cost += cost;
       worker.wallet += factoryWithMaxPaycheck.offeredPaycheck;
       BuyResource(worker);
-    }, 1000);
+    }, 2000);
   });
 }
 
@@ -235,7 +230,7 @@ export function FindResourceWithSmallestQuantity(worker: WorkerModel): string {
 function FindFactoryWithMaximumPaycheck(
   factories: FactoryModel[]
 ): FactoryModel | null {
-  if (!factories || factories.length) return null;
+  if (!factories || !factories.length) return null;
   return factories.reduce((previous, current) => {
     if (previous.offeredPaycheck < current.offeredPaycheck) {
       return current;
@@ -257,8 +252,9 @@ export function MoveWorker(
   callback?: () => void
 ): void {
   const from = worker.location;
-  const milliseconds = length(from, to);
+  const milliseconds = Math.ceil(length(from, to));
   worker.move = GetMoveParams(from, to, milliseconds); //every time move field changes worker is trigering animation
+  worker.location = to;
   if (callback) setTimeout(callback, milliseconds);
 }
 

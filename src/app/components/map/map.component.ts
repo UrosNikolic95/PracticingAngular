@@ -6,18 +6,12 @@ import {
   trigger,
 } from '@angular/animations';
 import { Component, OnInit } from '@angular/core';
-import { interval } from 'rxjs';
 import {
   GenerateRandomFactories,
   GenerateRandomWorkers,
 } from 'src/app/inner-logic/init';
 import { length, GetMoveParams } from 'src/app/inner-logic/logics';
-import {
-  FactoryModel,
-  MoveParams,
-  Point,
-  WorkerModel,
-} from 'src/app/inner-logic/models';
+import { FactoryModel, Point, WorkerModel } from 'src/app/inner-logic/models';
 
 @Component({
   selector: 'app-map',
@@ -55,19 +49,17 @@ export class MapComponent implements OnInit {
     this.factories = FactoryModel.allFactories;
     GenerateRandomWorkers();
     this.workers = WorkerModel.allWorkers;
-    this.workers.forEach((w) => {
-      console.log(w.move);
-    });
+    // this.workers.forEach((worker) => this.randomMove(worker));
   }
 
-  randomMove(item: WorkerModel, callback?: () => void): WorkerModel {
+  randomMove(worker: WorkerModel): WorkerModel {
     const goTo = new Point();
     goTo.x = Math.floor(Math.random() * 1000);
     goTo.y = Math.floor(Math.random() * 1000);
-    const milliseconds = length(item.location, goTo) * 3;
-    setTimeout(() => this.randomMove(item), milliseconds + 2000);
-    item.move = GetMoveParams(item.location, goTo, milliseconds);
-    item.location = goTo;
-    return item;
+    const milliseconds = length(worker.location, goTo) * 3;
+    setTimeout(() => this.randomMove(worker), milliseconds + 2000);
+    worker.move = GetMoveParams(worker.location, goTo, milliseconds);
+    worker.location = goTo;
+    return worker;
   }
 }
