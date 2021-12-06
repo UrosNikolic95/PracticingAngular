@@ -290,6 +290,6 @@ export function FactoryBuyResources(factory: FactoryModel): void {
   factory.inventoryData.consumption[resource].quantity += quantity;
   factory.inventoryData.consumption[resource].cost +=
     quantity * seller.offeredPrice;
-  factory.wallet -= seller.offeredPrice;
-  seller.wallet += seller.offeredPrice;
+  factory.wallet -= quantity * seller.offeredPrice;
+  seller.wallet += quantity * seller.offeredPrice;
 }
