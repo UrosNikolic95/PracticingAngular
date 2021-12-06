@@ -184,7 +184,7 @@ export function ChooseJob(worker: WorkerModel): void {
 }
 
 export function BuyResource(worker: WorkerModel): void {
-  const resource = FindResourceWithSmallestQuantity(worker);
+  const resource = FindResourceWithSmallestQuantity(worker.inventory);
   const seller = FindFactoryWithMinimumOfferedPrice(resource);
   MoveWorker(worker, seller.location, () => {
     worker.wallet -= seller.offeredPrice;
@@ -207,12 +207,13 @@ export function FindFactoryWithMinimumOfferedPrice(resource: string) {
   }, filtered[0]);
 }
 
-export function FindResourceWithSmallestQuantity(worker: WorkerModel): string {
-  const resources = Object.keys(worker.inventory);
+export function FindResourceWithSmallestQuantity(
+  inventory: RecordItemSetData
+): string {
+  const resources = Object.keys(inventory);
   return resources.reduce((previousResource, currentResource) => {
     if (
-      worker.inventory[previousResource].quantity <
-      worker.inventory[currentResource].quantity
+      inventory[previousResource].quantity < inventory[currentResource].quantity
     ) {
       return previousResource;
     } else {
@@ -271,4 +272,24 @@ export function GetMoveParams(
       leftEnd: x2 + lengtUnit,
     },
   };
+}
+
+export function FactoryBuyResources(factory: FactoryModel): void {
+  const resource = FindResourceWithSmallestQuantity(
+    factory.inventoryData.consumption
+  );
+  const seller = FindFactoryWithMinimumOfferedPrice(resource);
+
+  const quantity = Math.min(
+    factory.productionLineData.consumptionQuantity[resource],
+    seller.inventoryData.production.quantity
+  );
+
+  TakeSingleResource(quantity, seller.inventoryData.production);
+
+  factory.inventoryData.consumption[resource].quantity += quantity;
+  factory.inventoryData.consumption[resource].cost +=
+    quantity * seller.offeredPrice;
+  factory.wallet -= seller.offeredPrice;
+  seller.wallet += seller.offeredPrice;
 }

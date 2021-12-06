@@ -4,6 +4,7 @@ import {
   allResources,
   CalculateRecordItemSetCost,
   ChooseJob,
+  FactoryBuyResources,
   GenerateProductionData,
 } from './logics';
 import { FactoryModel, Point, RecordItemData, WorkerModel } from './models';
@@ -76,8 +77,9 @@ export function RandomIntBetween(from: number, to: number) {
   return from + Math.floor(Math.random() * (max - min));
 }
 
-interval(3000).subscribe(() => {
+interval(5000).subscribe(() => {
   FactoryModel.allFactories.forEach((factory) => {
+    FactoryBuyResources(factory);
     factory.offeredPaycheck = Math.random() * 50;
   });
 });

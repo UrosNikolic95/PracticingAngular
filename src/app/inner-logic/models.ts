@@ -5,6 +5,7 @@ export class FactoryModel {
   }
 
   location = new Point();
+  wallet = 0;
   producesResource = '';
   offeredPaycheck = 0;
   offeredPrice = 0;
