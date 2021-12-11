@@ -42,7 +42,7 @@ export function GenerateFactoryInventory(factory: FactoryModel): void {
     (resource) => {
       factory.inventoryData.consumption[resource] = new RecordItemData();
       factory.inventoryData.consumption[resource].quantity =
-        factory.productionLineData.consumptionQuantity[resource] * 50;
+        factory.productionLineData.consumptionQuantity[resource] * 5;
       factory.inventoryData.consumption[resource].cost = 200;
     }
   );
@@ -77,7 +77,7 @@ export function RandomIntBetween(from: number, to: number) {
   return from + Math.floor(Math.random() * (max - min));
 }
 
-interval(5000).subscribe(() => {
+interval(1000).subscribe(() => {
   FactoryModel.allFactories.forEach((factory) => {
     FactoryBuyResources(factory);
     factory.offeredPaycheck = Math.random() * 50;

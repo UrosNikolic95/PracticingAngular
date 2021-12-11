@@ -11,7 +11,7 @@ export class FactoryModel {
   offeredPrice = 0;
   productionLineData = new ProductionLineData();
   inventoryData = new FactoryInventoryData();
-  maxWorkers = 1;
+  maxWorkers = 10;
   currentWorkers = 0;
 }
 

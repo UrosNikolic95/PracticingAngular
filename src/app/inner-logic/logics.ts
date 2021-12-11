@@ -76,8 +76,7 @@ export function Produce(factory: FactoryModel, worker: WorkerModel) {
     worker.wallet += cost;
   }
 }
-
-function CheckRequirements(factory: FactoryModel): boolean {
+export function CheckRequirements(factory: FactoryModel): boolean {
   const { productionLineData, inventoryData } = factory;
   return Object.keys(productionLineData.consumptionQuantity).every(
     (resource) => {
@@ -154,7 +153,7 @@ export function CalculateRecordItemSetCost(
   }, 0);
 }
 
-export function ChooseJob(worker: WorkerModel): void {
+export async function ChooseJob(worker: WorkerModel): Promise<void> {
   const withReq = FactoryModel.allFactories.filter(
     (factory) =>
       CheckRequirements(factory) && factory.currentWorkers < factory.maxWorkers
@@ -171,27 +170,28 @@ export function ChooseJob(worker: WorkerModel): void {
     factoryWithMaxPaycheck.productionLineData.consumptionQuantity
   );
   const cost = CalculateRecordItemSetCost(taken);
-  MoveWorker(worker, factoryWithMaxPaycheck.location, () => {
-    setTimeout(() => {
-      factoryWithMaxPaycheck.inventoryData.production.quantity +=
-        factoryWithMaxPaycheck.productionLineData.productionQuantity;
-      factoryWithMaxPaycheck.inventoryData.production.cost += cost;
-      worker.wallet += factoryWithMaxPaycheck.offeredPaycheck;
-      factoryWithMaxPaycheck.currentWorkers--;
-      BuyResource(worker);
-    }, 2000);
-  });
+  await MoveWorker(worker, factoryWithMaxPaycheck.location);
+
+  await Sleep(2000);
+  factoryWithMaxPaycheck.inventoryData.production.quantity +=
+    factoryWithMaxPaycheck.productionLineData.productionQuantity;
+  factoryWithMaxPaycheck.inventoryData.production.cost += cost;
+  worker.wallet += factoryWithMaxPaycheck.offeredPaycheck;
+  factoryWithMaxPaycheck.currentWorkers--;
+
+  BuyResource(worker);
 }
 
-export function BuyResource(worker: WorkerModel): void {
+export async function BuyResource(worker: WorkerModel): Promise<void> {
   const resource = FindResourceWithSmallestQuantity(worker.inventory);
   const seller = FindFactoryWithMinimumOfferedPrice(resource);
-  MoveWorker(worker, seller.location, () => {
-    worker.wallet -= seller.offeredPrice;
-    const bougth = TakeSingleResource(1, seller.inventoryData.production);
-    AddRecordItem(worker.inventory[resource], bougth);
-    ChooseJob(worker);
-  });
+
+  await MoveWorker(worker, seller.location);
+
+  worker.wallet -= seller.offeredPrice;
+  const bougth = TakeSingleResource(1, seller.inventoryData.production);
+  AddRecordItem(worker.inventory[resource], bougth);
+  ChooseJob(worker);
 }
 
 export function FindFactoryWithMinimumOfferedPrice(resource: string) {
@@ -241,16 +241,19 @@ export function length(A: Point, B: Point): number {
   return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 }
 
-export function MoveWorker(
+export async function MoveWorker(
   worker: WorkerModel,
-  to: Point,
-  callback?: () => void
-): void {
+  to: Point
+): Promise<void> {
   const from = worker.location;
   const milliseconds = Math.ceil(length(from, to));
   worker.move = GetMoveParams(from, to, milliseconds); //every time move field changes worker is trigering animation
   worker.location = to;
-  if (callback) setTimeout(callback, milliseconds);
+  await Sleep(milliseconds);
+}
+
+export function Sleep(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
 export function GetMoveParams(
