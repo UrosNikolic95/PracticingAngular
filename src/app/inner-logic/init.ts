@@ -41,13 +41,13 @@ export function GenerateFactoryInventory(factory: FactoryModel): void {
   Object.keys(factory.productionLineData.consumptionQuantity).forEach(
     (resource) => {
       factory.inventoryData.consumption[resource] = new RecordItemData();
-      factory.inventoryData.consumption[resource].quantity =
+      factory.inventoryData.consumption[resource].totalQuantity =
         factory.productionLineData.consumptionQuantity[resource] * 5;
-      factory.inventoryData.consumption[resource].cost = 200;
+      factory.inventoryData.consumption[resource].totalCost = 200;
     }
   );
-  factory.inventoryData.production.quantity = 1000;
-  factory.inventoryData.production.cost = 2000;
+  factory.inventoryData.production.totalQuantity = 1000;
+  factory.inventoryData.production.totalCost = 2000;
 }
 
 export function GenerateRandomWorkers(): void {
@@ -65,8 +65,8 @@ export function InitWorkerInventory(): void {
     worker.wallet = RandomIntBetween(1000, 2000);
     allResources.forEach((resource) => {
       worker.inventory[resource] = new RecordItemData();
-      worker.inventory[resource].quantity = 100;
-      worker.inventory[resource].cost = RandomIntBetween(100, 200);
+      worker.inventory[resource].totalQuantity = 100;
+      worker.inventory[resource].totalCost = RandomIntBetween(100, 200);
     });
   });
 }

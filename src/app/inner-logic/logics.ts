@@ -11,6 +11,7 @@ import {
   Point,
   MoveParams,
 } from './models';
+import { NextWorkerJob } from './workflow';
 
 export const allResources: string[] = Array.from(
   { length: initData.numberOfResouces },
@@ -83,7 +84,7 @@ export function CheckRequirements(factory: FactoryModel): boolean {
       return (
         inventoryData.consumption[resource] &&
         productionLineData.consumptionQuantity[resource] &&
-        inventoryData.consumption[resource].quantity >=
+        inventoryData.consumption[resource].totalQuantity >=
           productionLineData.consumptionQuantity[resource]
       );
     }
@@ -98,7 +99,7 @@ export function TakeManyResources(
   Object.keys(quantityData).forEach((resource) => {
     const consumedQuantity = quantityData[resource];
     const consumptionRecordItem = inventoryData.consumption[resource];
-    recordItemSet[resource] = TakeSingleResource(
+    recordItemSet[resource] = TakeSingleTypeOfResource(
       consumedQuantity,
       consumptionRecordItem
     );
@@ -106,7 +107,7 @@ export function TakeManyResources(
   return recordItemSet;
 }
 
-export function TakeSingleResource(
+export function TakeSingleTypeOfResource(
   quantityTaken: number,
   recordItem: RecordItemData
 ): RecordItemData {
@@ -116,31 +117,31 @@ export function TakeSingleResource(
 }
 
 export function SubtractRecordItem(A: RecordItemData, B: RecordItemData) {
-  A.quantity -= B.quantity;
-  A.cost -= B.cost;
+  A.totalQuantity -= B.totalQuantity;
+  A.totalCost -= B.totalCost;
 }
 
 export function AddRecordItem(A: RecordItemData, B: RecordItemData) {
-  A.quantity += B.quantity;
-  A.cost += B.cost;
+  A.totalQuantity += B.totalQuantity;
+  A.totalCost += B.totalCost;
 }
 
 export function CalculatePart(
   quantityTaken: number,
   recordItem: RecordItemData
 ): RecordItemData {
-  const { quantity, cost } = recordItem;
-  if (!quantity) return new RecordItemData();
+  const { totalQuantity, totalCost } = recordItem;
+  if (!totalQuantity) return new RecordItemData();
 
   const resourcePrice = Math.min(
-    Math.ceil(quantityTaken * (cost / quantity)),
-    cost
+    Math.ceil(quantityTaken * (totalCost / totalQuantity)),
+    totalCost
   );
 
   const takenRecordItem = new RecordItemData();
 
-  takenRecordItem.quantity = quantityTaken;
-  takenRecordItem.cost = resourcePrice;
+  takenRecordItem.totalQuantity = quantityTaken;
+  takenRecordItem.totalCost = resourcePrice;
   return takenRecordItem;
 }
 
@@ -149,7 +150,7 @@ export function CalculateRecordItemSetCost(
 ): number {
   const resources = Object.keys(recordItemSet);
   return resources.reduce((previous, current) => {
-    return previous + recordItemSet[current].cost;
+    return previous + recordItemSet[current].totalCost;
   }, 0);
 }
 
@@ -163,7 +164,10 @@ export async function ChooseJob(worker: WorkerModel): Promise<void> {
     : FactoryModel.allFactories;
   const factoryWithMaxPaycheck =
     FindFactoryWithMaximumPaycheck(factoriesWithJobs);
-  if (!factoryWithMaxPaycheck) return;
+  if (!factoryWithMaxPaycheck) {
+    NextWorkerJob(worker);
+    return;
+  }
   factoryWithMaxPaycheck.currentWorkers++;
   const taken = TakeManyResources(
     factoryWithMaxPaycheck.inventoryData,
@@ -172,14 +176,16 @@ export async function ChooseJob(worker: WorkerModel): Promise<void> {
   const cost = CalculateRecordItemSetCost(taken);
   await MoveWorker(worker, factoryWithMaxPaycheck.location);
 
-  await Sleep(2000);
-  factoryWithMaxPaycheck.inventoryData.production.quantity +=
+  await Sleep(2000); //work takes time to be done
+
+  factoryWithMaxPaycheck.inventoryData.production.totalQuantity +=
     factoryWithMaxPaycheck.productionLineData.productionQuantity;
-  factoryWithMaxPaycheck.inventoryData.production.cost += cost;
+  factoryWithMaxPaycheck.inventoryData.production.totalCost += cost;
+  factoryWithMaxPaycheck.wallet -= factoryWithMaxPaycheck.offeredPaycheck;
   worker.wallet += factoryWithMaxPaycheck.offeredPaycheck;
   factoryWithMaxPaycheck.currentWorkers--;
 
-  BuyResource(worker);
+  NextWorkerJob(worker);
 }
 
 export async function BuyResource(worker: WorkerModel): Promise<void> {
@@ -189,9 +195,9 @@ export async function BuyResource(worker: WorkerModel): Promise<void> {
   await MoveWorker(worker, seller.location);
 
   worker.wallet -= seller.offeredPrice;
-  const bougth = TakeSingleResource(1, seller.inventoryData.production);
+  const bougth = TakeSingleTypeOfResource(1, seller.inventoryData.production);
   AddRecordItem(worker.inventory[resource], bougth);
-  ChooseJob(worker);
+  NextWorkerJob(worker);
 }
 
 export function FindFactoryWithMinimumOfferedPrice(resource: string) {
@@ -213,7 +219,8 @@ export function FindResourceWithSmallestQuantity(
   const resources = Object.keys(inventory);
   return resources.reduce((previousResource, currentResource) => {
     if (
-      inventory[previousResource].quantity < inventory[currentResource].quantity
+      inventory[previousResource].totalQuantity <
+      inventory[currentResource].totalQuantity
     ) {
       return previousResource;
     } else {
@@ -285,14 +292,16 @@ export function FactoryBuyResources(factory: FactoryModel): void {
 
   const quantity = Math.min(
     factory.productionLineData.consumptionQuantity[resource],
-    seller.inventoryData.production.quantity
+    seller.inventoryData.production.totalQuantity
   );
 
-  TakeSingleResource(quantity, seller.inventoryData.production);
+  const takenResource = TakeSingleTypeOfResource(
+    quantity,
+    seller.inventoryData.production
+  );
 
-  factory.inventoryData.consumption[resource].quantity += quantity;
-  factory.inventoryData.consumption[resource].cost +=
-    quantity * seller.offeredPrice;
-  factory.wallet -= quantity * seller.offeredPrice;
-  seller.wallet += quantity * seller.offeredPrice;
+  AddRecordItem(factory.inventoryData.consumption[resource], takenResource);
+
+  factory.wallet -= takenResource.totalCost;
+  seller.wallet += takenResource.totalCost;
 }

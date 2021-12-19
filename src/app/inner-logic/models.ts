@@ -25,6 +25,7 @@ export class WorkerModel {
   move = new MoveParams();
   wallet = 0;
   inventory = new RecordItemSetData();
+  jobIndex = 0;
 }
 
 export class MoveParams {
@@ -68,6 +69,6 @@ export class RecordItemSetData {
 }
 
 export class RecordItemData {
-  quantity = 0;
-  cost = 0;
+  totalQuantity = 0;
+  totalCost = 0;
 }
