@@ -67,16 +67,6 @@ function SetProduction(
   });
 }
 
-export function Produce(factory: FactoryModel, worker: WorkerModel) {
-  if (CheckRequirements(factory)) {
-    const taken = TakeManyResources(
-      factory.inventoryData,
-      factory.productionLineData.consumptionQuantity
-    );
-    const cost = CalculateRecordItemSetCost(taken);
-    worker.wallet += cost;
-  }
-}
 export function CheckRequirements(factory: FactoryModel): boolean {
   const { productionLineData, inventoryData } = factory;
   return Object.keys(productionLineData.consumptionQuantity).every(

@@ -6,7 +6,7 @@ type WorkerJob = (worker: WorkerModel) => void;
 const workerWorkflow: WorkerJob[] = [ChooseJob, BuyResource];
 
 export function NextWorkerJob(worker: WorkerModel): void {
-  worker.jobIndex = (worker.jobIndex + 1) % workerWorkflow.length;
+  worker.jobIndex = (worker.jobIndex + 1) % workerWorkflow.length; //round robin
   const jobFunction = workerWorkflow[worker.jobIndex];
   jobFunction(worker);
 }
