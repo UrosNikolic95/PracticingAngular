@@ -65,7 +65,7 @@ export function InitWorkerInventory(): void {
     worker.wallet = RandomIntBetween(1000, 2000);
     allResources.forEach((resource) => {
       worker.inventory[resource] = new RecordItemData();
-      worker.inventory[resource].totalQuantity = 100;
+      worker.inventory[resource].totalQuantity = RandomIntBetween(100, 200);
       worker.inventory[resource].totalCost = RandomIntBetween(100, 200);
     });
   });
@@ -77,9 +77,9 @@ export function RandomIntBetween(from: number, to: number) {
   return from + Math.floor(Math.random() * (max - min));
 }
 
-interval(1000).subscribe(() => {
+interval(500).subscribe(() => {
   FactoryModel.allFactories.forEach((factory) => {
     FactoryBuyResources(factory);
-    factory.offeredPaycheck = Math.random() * 50;
+    factory.offeredPaycheck = Math.floor(Math.random() * 10);
   });
 });

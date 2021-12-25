@@ -185,6 +185,7 @@ export async function BuyResource(worker: WorkerModel): Promise<void> {
   await MoveWorker(worker, seller.location);
 
   worker.wallet -= seller.offeredPrice;
+  seller.wallet += seller.offeredPrice;
   const bougth = TakeSingleTypeOfResource(1, seller.inventoryData.production);
   AddRecordItem(worker.inventory[resource], bougth);
   NextWorkerJob(worker);
