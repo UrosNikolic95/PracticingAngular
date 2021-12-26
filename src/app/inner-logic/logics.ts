@@ -196,14 +196,6 @@ export async function BuyResource(worker: WorkerModel): Promise<void> {
     return;
   }
 
-  const values = [
-    seller.inventoryData.production.totalQuantity,
-    affordable,
-    seller.offeredPrice,
-  ];
-  if (values.some((val) => !Number.isInteger(val))) {
-    console.log('>>>', values);
-  }
   const quantity = Math.min(
     seller.inventoryData.production.totalQuantity,
     affordable,
