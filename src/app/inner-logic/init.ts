@@ -71,10 +71,13 @@ export function InitWorkerInventory(): void {
 }
 
 export function CalculateOfferedPrice(factory: FactoryModel): void {
-  factory.offeredPrice = Math.floor(
-    CalculateRecordItemSetCost(factory.inventoryData.consumption) *
-      initData.profitCoeficiant +
-      RandomIntUpto(20)
+  factory.offeredPrice = Math.max(
+    Math.floor(
+      CalculateRecordItemSetCost(factory.inventoryData.consumption) *
+        initData.profitCoeficiant +
+        RandomIntUpto(20)
+    ),
+    1
   );
 }
 

@@ -75,7 +75,9 @@ export function CheckRequirements(factory: FactoryModel): boolean {
         inventoryData.consumption[resource] &&
         productionLineData.consumptionQuantity[resource] &&
         inventoryData.consumption[resource].totalQuantity >=
-          productionLineData.consumptionQuantity[resource]
+          productionLineData.consumptionQuantity[resource] &&
+        factory.currentWorkers < factory.maxWorkers &&
+        factory.offeredPaycheck <= factory.wallet
       );
     }
   );
@@ -145,19 +147,20 @@ export function CalculateRecordItemSetCost(
 }
 
 export async function ChooseJob(worker: WorkerModel): Promise<void> {
-  const withReq = FactoryModel.allFactories.filter(
-    (factory) =>
-      CheckRequirements(factory) && factory.currentWorkers < factory.maxWorkers
+  const withReq = FactoryModel.allFactories.filter((factory) =>
+    CheckRequirements(factory)
   );
   const factoriesWithJobs = withReq.length
     ? withReq
     : FactoryModel.allFactories;
   const factoryWithMaxPaycheck =
     FindFactoryWithMaximumPaycheck(factoriesWithJobs);
+
   if (!factoryWithMaxPaycheck) {
     NextWorkerJob(worker);
     return;
   }
+
   factoryWithMaxPaycheck.currentWorkers++;
   const taken = TakeManyResources(
     factoryWithMaxPaycheck.inventoryData,
@@ -182,11 +185,29 @@ export async function BuyResource(worker: WorkerModel): Promise<void> {
   const resource = FindResourceWithSmallestQuantity(worker.inventory);
   const seller = FindFactoryWithMinimumOfferedPrice(resource);
 
+  const affordable = Math.floor(worker.wallet / seller.offeredPrice);
+
+  const quantity = Math.min(
+    seller.inventoryData.production.totalQuantity,
+    affordable
+  );
+
+  if (quantity == 0) {
+    NextWorkerJob(worker);
+    return;
+  }
+
   await MoveWorker(worker, seller.location);
 
-  worker.wallet -= seller.offeredPrice;
-  seller.wallet += seller.offeredPrice;
-  const bougth = TakeSingleTypeOfResource(1, seller.inventoryData.production);
+  worker.wallet -= quantity * seller.offeredPrice;
+  if (Number.isNaN(worker.wallet)) {
+    console.log('worker.wallet is NaN', quantity, seller.offeredPrice);
+  }
+  seller.wallet += quantity * seller.offeredPrice;
+  const bougth = TakeSingleTypeOfResource(
+    quantity,
+    seller.inventoryData.production
+  );
   AddRecordItem(worker.inventory[resource], bougth);
   NextWorkerJob(worker);
 }
@@ -281,9 +302,12 @@ export function FactoryBuyResources(factory: FactoryModel): void {
   );
   const seller = FindFactoryWithMinimumOfferedPrice(resource);
 
+  const affordable = Math.floor(factory.wallet / seller.offeredPrice);
+
   const quantity = Math.min(
     factory.productionLineData.consumptionQuantity[resource],
-    seller.inventoryData.production.totalQuantity
+    seller.inventoryData.production.totalQuantity,
+    affordable
   );
 
   const takenResource = TakeSingleTypeOfResource(
