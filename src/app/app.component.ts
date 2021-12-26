@@ -5,6 +5,8 @@ import { FactoryModel } from './inner-logic/models';
 import {
   FactoryMaxWallet,
   FactoryMinWallet,
+  TotalFactoryWallet,
+  TotlaWorkerWallet,
   WorkerMaxWallet,
   WorkerMinWallet,
 } from './inner-logic/statistics';
@@ -25,6 +27,9 @@ export class AppComponent implements OnInit {
       this.factoryMinWallet = FactoryMinWallet();
       this.workerMaxWallet = WorkerMaxWallet();
       this.workerMinWallet = WorkerMinWallet();
+      this.totalWorkerWallet = TotlaWorkerWallet();
+      this.totalFactoryWallet = TotalFactoryWallet();
+      this.totalAllWallet = this.totalWorkerWallet + this.totalFactoryWallet;
       console.log('???', this.factoriesWithRequirements);
     });
   }
@@ -37,4 +42,7 @@ export class AppComponent implements OnInit {
   factoryMaxWallet = 0;
   workerMinWallet = 0;
   workerMaxWallet = 0;
+  totalWorkerWallet = 0;
+  totalFactoryWallet = 0;
+  totalAllWallet = 0;
 }

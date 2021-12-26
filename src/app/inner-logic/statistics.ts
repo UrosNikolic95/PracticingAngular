@@ -15,3 +15,11 @@ export function WorkerMinWallet(): number {
 export function WorkerMaxWallet(): number {
   return Math.max(...WorkerModel.allWorkers.map((w) => w.wallet));
 }
+
+export function TotalFactoryWallet(): number {
+  return FactoryModel.allFactories.reduce((sum, f) => sum + f.wallet, 0);
+}
+
+export function TotlaWorkerWallet(): number {
+  return WorkerModel.allWorkers.reduce((sum, f) => sum + f.wallet, 0);
+}
