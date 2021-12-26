@@ -21,10 +21,9 @@ export function GenerateRandomFactories(): void {
         factory.producesResource = resource;
         factory.productionLineData = productionData[resource];
         factory.location = CreateRandomLocation();
+        factory.wallet = RandomIntBetween(1000, 2000);
         GenerateFactoryInventory(factory);
-        factory.offeredPrice =
-          CalculateRecordItemSetCost(factory.inventoryData.consumption) *
-          initData.profitCoeficiant;
+        CalculateOfferedPrice(factory);
       }
     );
   });
@@ -71,15 +70,27 @@ export function InitWorkerInventory(): void {
   });
 }
 
+export function CalculateOfferedPrice(factory: FactoryModel): void {
+  factory.offeredPrice = Math.floor(
+    CalculateRecordItemSetCost(factory.inventoryData.consumption) *
+      initData.profitCoeficiant +
+      RandomIntUpto(20)
+  );
+}
+
+export function RandomIntUpto(upto: number) {
+  return Math.floor(Math.random() * upto);
+}
+
 export function RandomIntBetween(from: number, to: number) {
   const max = Math.max(from, to);
   const min = Math.min(from, to);
-  return from + Math.floor(Math.random() * (max - min));
+  return min + RandomIntUpto(max - min);
 }
 
 interval(500).subscribe(() => {
   FactoryModel.allFactories.forEach((factory) => {
     FactoryBuyResources(factory);
-    factory.offeredPaycheck = Math.floor(Math.random() * 10);
+    CalculateOfferedPrice(factory);
   });
 });
