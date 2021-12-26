@@ -62,8 +62,9 @@ function SetProduction(
 ): void {
   const produced = Object.keys(productionData);
   produced.forEach((producedResource) => {
-    productionData[producedResource].productionQuantity =
-      total[producedResource] * initData.productionCoeficiant;
+    productionData[producedResource].productionQuantity = Math.ceil(
+      total[producedResource] * initData.productionCoeficiant
+    );
   });
 }
 
@@ -194,8 +195,15 @@ export async function BuyResource(worker: WorkerModel): Promise<void> {
     NextWorkerJob(worker);
     return;
   }
-  const val = [seller.inventoryData.production.totalQuantity, affordable, 10];
-  if (val.some((item) => item < 0)) console.log('>>>', val);
+
+  const values = [
+    seller.inventoryData.production.totalQuantity,
+    affordable,
+    seller.offeredPrice,
+  ];
+  if (values.some((val) => !Number.isInteger(val))) {
+    console.log('>>>', values);
+  }
   const quantity = Math.min(
     seller.inventoryData.production.totalQuantity,
     affordable,
