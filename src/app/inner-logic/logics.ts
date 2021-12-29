@@ -182,7 +182,6 @@ export async function ChooseJob(worker: WorkerModel): Promise<void> {
 export async function BuyResource(worker: WorkerModel): Promise<void> {
   const resource = FindResourceWithSmallestQuantity(worker.inventory);
   const seller = FindFactoryWithMinimumOfferedPrice(resource);
-  const rememberOfferedPrice = seller.offeredPrice;
   const affordable = Math.max(
     Math.floor(worker.wallet / seller.offeredPrice),
     0
@@ -199,10 +198,12 @@ export async function BuyResource(worker: WorkerModel): Promise<void> {
     10
   );
 
+  // WARNING: Until worker comes to the factory offered price can change!!!
+  // Remember it while hiring, then apply it later.
+  const hiringPaycheck = seller.offeredPrice;
   await MoveWorker(worker, seller.location);
-
-  worker.wallet -= quantity * rememberOfferedPrice;
-  seller.wallet += quantity * rememberOfferedPrice;
+  worker.wallet -= quantity * hiringPaycheck;
+  seller.wallet += quantity * hiringPaycheck;
   const bougth = TakeSingleTypeOfResource(
     quantity,
     seller.inventoryData.production
