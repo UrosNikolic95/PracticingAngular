@@ -148,12 +148,9 @@ export function CalculateRecordItemSetCost(
 }
 
 export async function ChooseJob(worker: WorkerModel): Promise<void> {
-  const withReq = FactoryModel.allFactories.filter((factory) =>
+  const factoriesWithJobs = FactoryModel.allFactories.filter((factory) =>
     CheckRequirements(factory)
   );
-  const factoriesWithJobs = withReq.length
-    ? withReq
-    : FactoryModel.allFactories;
   const factoryWithMaxPaycheck =
     FindFactoryWithMaximumPaycheck(factoriesWithJobs);
 
@@ -185,7 +182,7 @@ export async function ChooseJob(worker: WorkerModel): Promise<void> {
 export async function BuyResource(worker: WorkerModel): Promise<void> {
   const resource = FindResourceWithSmallestQuantity(worker.inventory);
   const seller = FindFactoryWithMinimumOfferedPrice(resource);
-
+  const rememberOfferedPrice = seller.offeredPrice;
   const affordable = Math.max(
     Math.floor(worker.wallet / seller.offeredPrice),
     0
@@ -204,8 +201,8 @@ export async function BuyResource(worker: WorkerModel): Promise<void> {
 
   await MoveWorker(worker, seller.location);
 
-  worker.wallet -= quantity * seller.offeredPrice;
-  seller.wallet += quantity * seller.offeredPrice;
+  worker.wallet -= quantity * rememberOfferedPrice;
+  seller.wallet += quantity * rememberOfferedPrice;
   const bougth = TakeSingleTypeOfResource(
     quantity,
     seller.inventoryData.production
