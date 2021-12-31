@@ -1,10 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { interval } from 'rxjs';
 import { CheckRequirements } from './inner-logic/logics';
-import { FactoryModel } from './inner-logic/models';
+import { FactoryModel, ResourceOfferredPriceData } from './inner-logic/models';
 import {
+  AfordableWorkplaces,
   FactoryMaxWallet,
   FactoryMinWallet,
+  MaxOfferredPrice,
+  MinOfferredPrice,
   TotalFactoryWallet,
   TotlaWorkerWallet,
   WorkerMaxWallet,
@@ -30,6 +33,9 @@ export class AppComponent implements OnInit {
       this.totalWorkerWallet = TotlaWorkerWallet();
       this.totalFactoryWallet = TotalFactoryWallet();
       this.totalAllWallet = this.totalWorkerWallet + this.totalFactoryWallet;
+      this.afordableWorkplaces = AfordableWorkplaces();
+      this.maxOfferedPrice = MaxOfferredPrice();
+      this.minOfferedPrice = MinOfferredPrice();
       console.log('???', this.factoriesWithRequirements);
     });
   }
@@ -45,4 +51,7 @@ export class AppComponent implements OnInit {
   totalWorkerWallet = 0;
   totalFactoryWallet = 0;
   totalAllWallet = 0;
+  afordableWorkplaces = 0;
+  maxOfferedPrice: ResourceOfferredPriceData[] = [];
+  minOfferedPrice: ResourceOfferredPriceData[] = [];
 }

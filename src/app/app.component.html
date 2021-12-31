@@ -12,3 +12,10 @@
   {{ totalFactoryWallet }} (This sum should stay the same if it was properly
   done.)
 </div>
+<div>Afordable Workplaces: {{ afordableWorkplaces }}</div>
+<div *ngFor="let item of maxOfferedPrice">
+  {{ item.resource }}:{{ item.offeredPrice }}
+</div>
+<div *ngFor="let item of minOfferedPrice">
+  {{ item.resource }}:{{ item.offeredPrice }}
+</div>

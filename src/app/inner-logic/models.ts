@@ -72,3 +72,12 @@ export class RecordItemData {
   totalQuantity = 0;
   totalCost = 0;
 }
+
+export class ResourceOfferredPriceData {
+  resource = '';
+  offeredPrice = 0;
+}
+
+export class ObjectLiteral {
+  [key: string]: any;
+}

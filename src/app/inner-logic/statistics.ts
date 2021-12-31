@@ -1,4 +1,9 @@
-import { FactoryModel, WorkerModel } from './models';
+import {
+  FactoryModel,
+  ObjectLiteral,
+  ResourceOfferredPriceData,
+  WorkerModel,
+} from './models';
 
 export function FactoryMinWallet(): number {
   return Math.min(...FactoryModel.allFactories.map((f) => f.wallet));
@@ -22,4 +27,45 @@ export function TotalFactoryWallet(): number {
 
 export function TotlaWorkerWallet(): number {
   return WorkerModel.allWorkers.reduce((sum, f) => sum + f.wallet, 0);
+}
+
+export function AfordableWorkplaces(): number {
+  return FactoryModel.allFactories.reduce(
+    (sum, f) => (f.offeredPaycheck <= f.wallet ? sum + 1 : sum),
+    0
+  );
+}
+
+export function MaxOfferredPrice(): ResourceOfferredPriceData[] {
+  const data = new ObjectLiteral();
+  FactoryModel.allFactories.forEach((factory) => {
+    if (!data[factory.producesResource]) {
+      data[factory.producesResource] = factory.offeredPrice;
+    } else if (data[factory.producesResource] < factory.offeredPrice) {
+      data[factory.producesResource] = factory.offeredPrice;
+    }
+  });
+  return Object.keys(data).map((resource) => {
+    const val = new ResourceOfferredPriceData();
+    val.offeredPrice = data[resource];
+    val.resource = resource;
+    return val;
+  });
+}
+
+export function MinOfferredPrice(): ResourceOfferredPriceData[] {
+  const data = new ObjectLiteral();
+  FactoryModel.allFactories.forEach((factory) => {
+    if (!data[factory.producesResource]) {
+      data[factory.producesResource] = factory.offeredPrice;
+    } else if (data[factory.producesResource] > factory.offeredPrice) {
+      data[factory.producesResource] = factory.offeredPrice;
+    }
+  });
+  return Object.keys(data).map((resource) => {
+    const val = new ResourceOfferredPriceData();
+    val.offeredPrice = data[resource];
+    val.resource = resource;
+    return val;
+  });
 }

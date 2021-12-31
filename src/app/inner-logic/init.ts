@@ -21,7 +21,7 @@ export function GenerateRandomFactories(): void {
         factory.producesResource = resource;
         factory.productionLineData = productionData[resource];
         factory.location = CreateRandomLocation();
-        factory.wallet = RandomIntBetween(1000, 2000);
+        factory.wallet = RandomIntBetween(10000, 20000);
         GenerateFactoryInventory(factory);
         CalculateOfferedPrice(factory);
       }
@@ -61,7 +61,7 @@ export function GenerateRandomWorkers(): void {
 
 export function InitWorkerInventory(): void {
   WorkerModel.allWorkers.forEach((worker) => {
-    worker.wallet = RandomIntBetween(1000, 2000);
+    worker.wallet = RandomIntBetween(10000, 20000);
     allResources.forEach((resource) => {
       worker.inventory[resource] = new RecordItemData();
       worker.inventory[resource].totalQuantity = RandomIntBetween(100, 200);

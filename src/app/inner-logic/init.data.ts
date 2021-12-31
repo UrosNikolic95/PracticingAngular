@@ -3,7 +3,7 @@ export const initData = {
   mapHeight: 1000,
   numberOfResouces: 10,
   profitCoeficiant: 1.1,
-  productionCoeficiant: 1.6,
+  productionCoeficiant: 2.6,
   numberOfWorkers: 100,
-  numberOfFactories: 50,
+  numberOfFactories: 20,
 };

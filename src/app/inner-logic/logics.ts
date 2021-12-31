@@ -70,17 +70,17 @@ function SetProduction(
 
 export function CheckRequirements(factory: FactoryModel): boolean {
   const { productionLineData, inventoryData } = factory;
-  return Object.keys(productionLineData.consumptionQuantity).every(
-    (resource) => {
+  return (
+    Object.keys(productionLineData.consumptionQuantity).every((resource) => {
       return (
         inventoryData.consumption[resource] &&
         productionLineData.consumptionQuantity[resource] &&
         inventoryData.consumption[resource].totalQuantity >=
-          productionLineData.consumptionQuantity[resource] &&
-        factory.currentWorkers < factory.maxWorkers &&
-        factory.offeredPaycheck <= factory.wallet
+          productionLineData.consumptionQuantity[resource]
       );
-    }
+    }) &&
+    factory.currentWorkers < factory.maxWorkers &&
+    factory.offeredPaycheck <= factory.wallet
   );
 }
 
@@ -188,6 +188,7 @@ export async function BuyResource(worker: WorkerModel): Promise<void> {
   );
 
   if (affordable == 0) {
+    console.log('affordable == 0');
     NextWorkerJob(worker);
     return;
   }
