@@ -188,7 +188,7 @@ export async function BuyResource(worker: WorkerModel): Promise<void> {
   );
 
   if (affordable == 0) {
-    console.log('affordable == 0');
+    console.log('worker affordable == 0');
     NextWorkerJob(worker);
     return;
   }
@@ -226,14 +226,18 @@ export function FindFactoryWithMinimumOfferedPrice(resource: string) {
   }, filtered[0]);
 }
 
-export function FindResourceWithSmallestQuantity(
-  inventory: RecordItemSetData
+export function FindResourceWithsmallestRunoutIterations(
+  factory: FactoryModel
 ): string {
-  const resources = Object.keys(inventory);
+  const consumptionQuantity = factory.productionLineData.consumptionQuantity;
+  const inventoryConsumption = factory.inventoryData.consumption;
+  const resources = Object.keys(consumptionQuantity);
   return resources.reduce((previousResource, currentResource) => {
     if (
-      inventory[previousResource].totalQuantity <
-      inventory[currentResource].totalQuantity
+      inventoryConsumption[previousResource].totalQuantity /
+        consumptionQuantity[previousResource] <
+      inventoryConsumption[currentResource].totalQuantity /
+        consumptionQuantity[currentResource]
     ) {
       return previousResource;
     } else {
@@ -298,9 +302,8 @@ export function GetMoveParams(
 }
 
 export function FactoryBuyResources(factory: FactoryModel): void {
-  const resource = FindResourceWithSmallestQuantity(
-    factory.inventoryData.consumption
-  );
+  const resource = FindResourceWithsmallestRunoutIterations(factory);
+
   const seller = FindFactoryWithMinimumOfferedPrice(resource);
 
   const affordable = Math.max(
@@ -309,6 +312,7 @@ export function FactoryBuyResources(factory: FactoryModel): void {
   );
 
   if (affordable == 0) {
+    console.log('factory affordable == 0');
     return;
   }
 
