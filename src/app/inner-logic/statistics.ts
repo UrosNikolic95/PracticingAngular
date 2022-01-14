@@ -2,6 +2,8 @@ import {
   FactoryModel,
   ObjectLiteral,
   ResourceOfferredPriceData,
+  ResourceQuantityData,
+  TypedObjectLiteral,
   WorkerModel,
 } from './models';
 
@@ -37,7 +39,7 @@ export function AfordableWorkplaces(): number {
 }
 
 export function MaxOfferredPrice(): ResourceOfferredPriceData[] {
-  const data = new ObjectLiteral();
+  const data = new TypedObjectLiteral<number>();
   FactoryModel.allFactories.forEach((factory) => {
     if (!data[factory.producesResource]) {
       data[factory.producesResource] = factory.offeredPrice;
@@ -54,7 +56,7 @@ export function MaxOfferredPrice(): ResourceOfferredPriceData[] {
 }
 
 export function MinOfferredPrice(): ResourceOfferredPriceData[] {
-  const data = new ObjectLiteral();
+  const data = new TypedObjectLiteral<number>();
   FactoryModel.allFactories.forEach((factory) => {
     if (!data[factory.producesResource]) {
       data[factory.producesResource] = factory.offeredPrice;
@@ -65,6 +67,50 @@ export function MinOfferredPrice(): ResourceOfferredPriceData[] {
   return Object.keys(data).map((resource) => {
     const val = new ResourceOfferredPriceData();
     val.offeredPrice = data[resource];
+    val.resource = resource;
+    return val;
+  });
+}
+
+export function MinSellingStock(): ResourceQuantityData[] {
+  const data = new TypedObjectLiteral<number>();
+  FactoryModel.allFactories.forEach((factory) => {
+    if (!data[factory.producesResource]) {
+      data[factory.producesResource] =
+        factory.inventoryData.production.totalQuantity;
+    } else if (
+      data[factory.producesResource] >
+      factory.inventoryData.production.totalQuantity
+    ) {
+      data[factory.producesResource] =
+        factory.inventoryData.production.totalQuantity;
+    }
+  });
+  return Object.keys(data).map((resource) => {
+    const val = new ResourceQuantityData();
+    val.quantity = data[resource];
+    val.resource = resource;
+    return val;
+  });
+}
+
+export function MaxSellingStock(): ResourceQuantityData[] {
+  const data = new TypedObjectLiteral<number>();
+  FactoryModel.allFactories.forEach((factory) => {
+    if (!data[factory.producesResource]) {
+      data[factory.producesResource] =
+        factory.inventoryData.production.totalQuantity;
+    } else if (
+      data[factory.producesResource] <
+      factory.inventoryData.production.totalQuantity
+    ) {
+      data[factory.producesResource] =
+        factory.inventoryData.production.totalQuantity;
+    }
+  });
+  return Object.keys(data).map((resource) => {
+    const val = new ResourceQuantityData();
+    val.quantity = data[resource];
     val.resource = resource;
     return val;
   });

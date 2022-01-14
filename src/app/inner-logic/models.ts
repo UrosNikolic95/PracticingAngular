@@ -78,6 +78,15 @@ export class ResourceOfferredPriceData {
   offeredPrice = 0;
 }
 
+export class ResourceQuantityData {
+  resource = '';
+  quantity = 0;
+}
+
+export class TypedObjectLiteral<T> {
+  [key: string]: T;
+}
+
 export class ObjectLiteral {
   [key: string]: any;
 }
