@@ -179,6 +179,22 @@ export async function ChooseJob(worker: WorkerModel): Promise<void> {
   NextWorkerJob(worker);
 }
 
+export function FindResourceWithSmallestQuantity(
+  inventory: RecordItemSetData
+): string {
+  const resources = Object.keys(inventory);
+  return resources.reduce((previousResource, currentResource) => {
+    if (
+      inventory[previousResource].totalQuantity <
+      inventory[currentResource].totalQuantity
+    ) {
+      return previousResource;
+    } else {
+      return currentResource;
+    }
+  }, resources[0]);
+}
+
 export async function BuyResource(worker: WorkerModel): Promise<void> {
   const resource = FindResourceWithSmallestQuantity(worker.inventory);
   const seller = FindFactoryWithMinimumOfferedPrice(resource);
