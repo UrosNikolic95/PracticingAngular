@@ -226,6 +226,15 @@ export function FindFactoryWithMinimumOfferedPrice(resource: string) {
   }, filtered[0]);
 }
 
+export function CalculateIterationsForResource(
+  factory: FactoryModel,
+  resource: string
+): number {
+  const consumption = factory.productionLineData.consumptionQuantity[resource];
+  const inventory = factory.inventoryData.consumption[resource].totalQuantity;
+  return inventory / consumption;
+}
+
 export function FindResourceWithsmallestRunoutIterations(
   factory: FactoryModel
 ): string {
@@ -234,10 +243,8 @@ export function FindResourceWithsmallestRunoutIterations(
   const resources = Object.keys(consumptionQuantity);
   return resources.reduce((previousResource, currentResource) => {
     if (
-      inventoryConsumption[previousResource].totalQuantity /
-        consumptionQuantity[previousResource] <
-      inventoryConsumption[currentResource].totalQuantity /
-        consumptionQuantity[currentResource]
+      CalculateIterationsForResource(factory, previousResource) <
+      CalculateIterationsForResource(factory, currentResource)
     ) {
       return previousResource;
     } else {
