@@ -80,3 +80,72 @@ export function CreateEmtyTable(rows: number, columns: number): number[][] {
     Array.from({ length: columns }, () => 0)
   );
 }
+
+interface IObj<T> {
+  [key: string]: T;
+  [key: number]: T;
+}
+
+interface ITableItem {
+  row: string;
+  column: string;
+  value: number;
+}
+
+interface IColumnItem {
+  column: string;
+  value: number;
+}
+
+export class TableData {
+  private constructor(public readonly obj: IObj<IObj<number>>) {}
+
+  static nestedObject(obj: IObj<IObj<number>>) {
+    return new TableData(obj);
+  }
+
+  static itemList(obj: ITableItem[]): TableData {
+    const rows = unique(obj.map((item) => item.row));
+    const table = {} as IObj<IObj<number>>;
+    rows.forEach((row) => {
+      table[row] = {};
+    });
+    obj.forEach((item) => {
+      table[item.row][item.column] = item.value;
+    });
+    return new TableData(table);
+  }
+
+  static columnList(obj: IColumnItem[]): TableData {
+    const table = {} as IObj<IObj<number>>;
+    obj.forEach((item, index) => {
+      table[index] = {};
+    });
+    obj.forEach((item, index) => {
+      table[index][item.column] = item.value;
+    });
+    return new TableData(table);
+  }
+
+  static getAllRows(obj: IObj<IObj<number>>): string[] {
+    return Object.keys(obj);
+  }
+
+  getAllRows(): string[] {
+    return TableData.getAllRows(this.obj);
+  }
+
+  static getAllColumns(obj: IObj<IObj<number>>): string[] {
+    const columnsSet = new Set<string>();
+    Object.keys(obj).forEach((key1) =>
+      Object.keys(obj[key1]).forEach((key2) => {
+        columnsSet.add(key2);
+      })
+    );
+    return Array.from(columnsSet);
+  }
+
+  getAllColumns(): string[] {
+    return TableData.getAllColumns(this.obj);
+  }
+}
