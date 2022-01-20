@@ -83,7 +83,6 @@ export function CreateEmtyTable(rows: number, columns: number): number[][] {
 
 interface IObj<T> {
   [key: string]: T;
-  [key: number]: T;
 }
 
 interface ITableItem {
@@ -98,10 +97,52 @@ interface IColumnItem {
 }
 
 export class TableData {
-  private constructor(public readonly obj: IObj<IObj<number>>) {}
+  private constructor(public readonly table: IObj<IObj<number>>) {}
+
+  static transpose(obj: TableData): TableData {
+    const basicTable = obj.table;
+    const columns = obj.getAllColumns();
+    const table = {} as IObj<IObj<number>>;
+    columns.forEach((column) => {
+      table[column] = {};
+    });
+    Object.keys(basicTable).forEach((row) => {
+      Object.keys(basicTable[row]).forEach((column) => {
+        table[column][row] = basicTable[row][column];
+      });
+    });
+    return new TableData(table);
+  }
 
   static nestedObject(obj: IObj<IObj<number>>) {
     return new TableData(obj);
+  }
+
+  static arrOfArr(obj: number[][]): TableData {
+    const table = {} as IObj<IObj<number>>;
+    obj.forEach((item1, index1) => {
+      table[index1] = {};
+      item1.forEach((item2, index2) => {
+        table[index1][index2] = item2;
+      });
+    });
+    return new TableData(table);
+  }
+
+  static fromAny(obj: any): TableData {
+    const table = {} as IObj<IObj<number>>;
+    Object.keys(obj).forEach((key1) => {
+      table[key1] = {};
+      Object.keys(obj[key1]).forEach((key2) => {
+        if (
+          typeof obj[key1][key2] == 'number' ||
+          obj[key1][key2] instanceof Number
+        ) {
+          table[key1][key2] = obj[key1][key2];
+        }
+      });
+    });
+    return new TableData(table);
   }
 
   static itemList(obj: ITableItem[]): TableData {
@@ -116,7 +157,7 @@ export class TableData {
     return new TableData(table);
   }
 
-  static columnList(obj: IColumnItem[]): TableData {
+  static columnItemList(obj: IColumnItem[]): TableData {
     const table = {} as IObj<IObj<number>>;
     obj.forEach((item, index) => {
       table[index] = {};
@@ -127,12 +168,20 @@ export class TableData {
     return new TableData(table);
   }
 
+  static columnList(obj: IObj<number>[]): TableData {
+    const table = {} as IObj<IObj<number>>;
+    obj.forEach((item, index) => {
+      table[index] = Object.assign({}, item);
+    });
+    return new TableData(table);
+  }
+
   static getAllRows(obj: IObj<IObj<number>>): string[] {
     return Object.keys(obj);
   }
 
   getAllRows(): string[] {
-    return TableData.getAllRows(this.obj);
+    return TableData.getAllRows(this.table);
   }
 
   static getAllColumns(obj: IObj<IObj<number>>): string[] {
@@ -146,6 +195,6 @@ export class TableData {
   }
 
   getAllColumns(): string[] {
-    return TableData.getAllColumns(this.obj);
+    return TableData.getAllColumns(this.table);
   }
 }
