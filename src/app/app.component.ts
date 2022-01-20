@@ -57,7 +57,7 @@ export class AppComponent implements OnInit {
         maxSellingStock: MaxSellingStock().reduce((red, item) => {
           red[item.resource] = item.quantity;
           return red;
-        }, {} as ITypedObject<number>),
+        }, {} as any),
       };
       console.log('???', this.factoriesWithRequirements);
     });

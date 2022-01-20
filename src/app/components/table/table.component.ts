@@ -1,8 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import {
-  getAllColumns,
-  IDoubleTypedObject,
-} from 'src/app/inner-logic/table.helpers';
+import { IDoubleTypedObject } from 'src/app/inner-logic/table.helpers';
 
 @Component({
   selector: 'app-table',
@@ -13,7 +10,7 @@ export class TableComponent implements OnInit {
   constructor() {}
 
   @Input()
-  data: IDoubleTypedObject<number> = {};
+  data: any = {};
 
   ngOnInit(): void {}
 
@@ -22,6 +19,14 @@ export class TableComponent implements OnInit {
   }
 
   get columns() {
-    return getAllColumns(this.data);
+    return this.getAllColumns(this.data);
+  }
+
+  getAllColumns(obj: IDoubleTypedObject<number>): string[] {
+    const columnsSet = new Set<string>();
+    Object.keys(obj).forEach((row) =>
+      Object.keys(obj[row]).forEach((column) => columnsSet.add(column))
+    );
+    return Array.from(columnsSet);
   }
 }
