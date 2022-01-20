@@ -13,28 +13,4 @@
   done.)
 </div>
 <div>Afordable Workplaces: {{ afordableWorkplaces }}</div>
-<div>
-  <div>maxOfferedPrice</div>
-  <div *ngFor="let item of maxOfferedPrice">
-    {{ item.resource }}:{{ item.offeredPrice }}
-  </div>
-</div>
-<div>
-  <div>minOfferedPrice</div>
-  <div *ngFor="let item of minOfferedPrice">
-    {{ item.resource }}:{{ item.offeredPrice }}
-  </div>
-</div>
-<div>
-  <div>minSellingStock</div>
-  <div *ngFor="let item of minSellingStock">
-    {{ item.resource }}:{{ item.quantity }}
-  </div>
-</div>
-<div>
-  <div>maxSellingStock</div>
-  <div *ngFor="let item of maxSellingStock">
-    {{ item.resource }}:{{ item.quantity }}
-  </div>
-</div>
-<!-- <app-table data="{{ data }}"> </app-table> -->
+<app-table [data]="data"> </app-table>
