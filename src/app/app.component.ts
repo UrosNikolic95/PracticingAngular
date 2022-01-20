@@ -19,6 +19,7 @@ import {
   WorkerMaxWallet,
   WorkerMinWallet,
 } from './inner-logic/statistics';
+import { ITypedObject } from './inner-logic/table.helpers';
 
 @Component({
   selector: 'app-root',
@@ -44,6 +45,24 @@ export class AppComponent implements OnInit {
       this.minOfferedPrice = MinOfferredPrice();
       this.minSellingStock = MinSellingStock();
       this.maxSellingStock = MaxSellingStock();
+      this.data = {
+        maxOfferedPrice: MaxOfferredPrice().reduce((red, item) => {
+          red[item.resource] = item.offeredPrice;
+          return red;
+        }, {} as ITypedObject<number>),
+        minOfferedPrice: MinOfferredPrice().reduce((red, item) => {
+          red[item.resource] = item.offeredPrice;
+          return red;
+        }, {} as ITypedObject<number>),
+        minSellingStock: MinSellingStock().reduce((red, item) => {
+          red[item.resource] = item.quantity;
+          return red;
+        }, {} as ITypedObject<number>),
+        maxSellingStock: MaxSellingStock().reduce((red, item) => {
+          red[item.resource] = item.quantity;
+          return red;
+        }, {} as ITypedObject<number>),
+      };
       console.log('???', this.factoriesWithRequirements);
     });
   }
@@ -64,4 +83,6 @@ export class AppComponent implements OnInit {
   minOfferedPrice: ResourceOfferredPriceData[] = [];
   maxSellingStock: ResourceQuantityData[] = [];
   minSellingStock: ResourceQuantityData[] = [];
+
+  data = {};
 }

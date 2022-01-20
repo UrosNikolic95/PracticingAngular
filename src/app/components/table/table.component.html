@@ -1,0 +1,14 @@
+<table>
+  <tr>
+    <td>rows\columns</td>
+    <td *ngFor="let column of columns">
+      {{ column }}
+    </td>
+  </tr>
+  <tr *ngFor="let row of rows">
+    <td>{{ row }}</td>
+    <td *ngFor="let column of columns">
+      {{ data[row][column] || 0 }}
+    </td>
+  </tr>
+</table>
