@@ -10,7 +10,7 @@ export class TableComponent implements OnInit {
   constructor() {}
 
   @Input()
-  data: any = {};
+  data: IDoubleTypedObject<number> = {};
 
   ngOnInit(): void {}
 
