@@ -19,7 +19,12 @@ import {
   WorkerMaxWallet,
   WorkerMinWallet,
 } from './inner-logic/statistics';
-import { IDoubleTypedObject, ITypedObject } from './inner-logic/table.helpers';
+import {
+  IDoubleTypedObject,
+  IObj,
+  ITypedObject,
+  transpose,
+} from './inner-logic/table.helpers';
 
 @Component({
   selector: 'app-root',
@@ -41,7 +46,7 @@ export class AppComponent implements OnInit {
       this.totalFactoryWallet = TotalFactoryWallet();
       this.totalAllWallet = this.totalWorkerWallet + this.totalFactoryWallet;
       this.afordableWorkplaces = AfordableWorkplaces();
-      this.data = {
+      this.data = transpose({
         maxOfferedPrice: MaxOfferredPrice().reduce((red, item) => {
           red[item.resource] = item.offeredPrice;
           return red;
@@ -58,7 +63,7 @@ export class AppComponent implements OnInit {
           red[item.resource] = item.quantity;
           return red;
         }, {} as ITypedObject<number>),
-      };
+      });
     });
   }
   title = 'PracticingAngular';
@@ -75,5 +80,5 @@ export class AppComponent implements OnInit {
   totalAllWallet = 0;
   afordableWorkplaces = 0;
 
-  data: IDoubleTypedObject<number> = {};
+  data: IObj<IObj<number>> = {};
 }

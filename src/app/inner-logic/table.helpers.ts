@@ -8,14 +8,6 @@ export function unique<T>(arr: T[]): T[] {
   return Array.from(new Set(arr));
 }
 
-export function getAllColumns(obj: IDoubleTypedObject<number>): string[] {
-  const columnsSet = new Set<string>();
-  Object.keys(obj).forEach((row) =>
-    Object.keys(obj[row]).forEach((column) => columnsSet.add(column))
-  );
-  return Array.from(columnsSet);
-}
-
 export function CreateTableV1(obj: IDoubleTypedObject<number>) {
   const rows = Object.keys(obj);
   const columns = getAllColumns(obj);
@@ -27,7 +19,6 @@ export function CreateTableV1(obj: IDoubleTypedObject<number>) {
       }
     });
   });
-
   return table;
 }
 
@@ -81,120 +72,107 @@ export function CreateEmtyTable(rows: number, columns: number): number[][] {
   );
 }
 
-interface IObj<T> {
+export interface IObj<T> {
   [key: string]: T;
 }
 
-interface ITableItem {
+export interface ITableItem {
   row: string;
   column: string;
   value: number;
 }
 
-interface IColumnItem {
+export interface IColumnItem {
   column: string;
   value: number;
 }
 
-export class TableData {
-  private constructor(public readonly table: IObj<IObj<number>>) {}
-
-  static transpose(obj: TableData): TableData {
-    const basicTable = obj.table;
-    const columns = obj.getAllColumns();
-    const table = {} as IObj<IObj<number>>;
-    columns.forEach((column) => {
-      table[column] = {};
+export function transpose(obj: IObj<IObj<number>>): IObj<IObj<number>> {
+  const columns = getAllColumns(obj);
+  const table = {} as IObj<IObj<number>>;
+  columns.forEach((column) => {
+    table[column] = {};
+  });
+  Object.keys(obj).forEach((row) => {
+    Object.keys(obj[row]).forEach((column) => {
+      table[column][row] = obj[row][column];
     });
-    Object.keys(basicTable).forEach((row) => {
-      Object.keys(basicTable[row]).forEach((column) => {
-        table[column][row] = basicTable[row][column];
-      });
+  });
+  return table;
+}
+
+export function nestedObject(obj: IObj<IObj<number>>) {
+  return obj;
+}
+
+export function arrOfArr(obj: number[][]): IObj<IObj<number>> {
+  const table = {} as IObj<IObj<number>>;
+  obj.forEach((item1, index1) => {
+    table[index1] = {};
+    item1.forEach((item2, index2) => {
+      table[index1][index2] = item2;
     });
-    return new TableData(table);
-  }
+  });
+  return table;
+}
 
-  static nestedObject(obj: IObj<IObj<number>>) {
-    return new TableData(obj);
-  }
-
-  static arrOfArr(obj: number[][]): TableData {
-    const table = {} as IObj<IObj<number>>;
-    obj.forEach((item1, index1) => {
-      table[index1] = {};
-      item1.forEach((item2, index2) => {
-        table[index1][index2] = item2;
-      });
+export function fromAny(obj: any): IObj<IObj<number>> {
+  const table = {} as IObj<IObj<number>>;
+  Object.keys(obj).forEach((key1) => {
+    table[key1] = {};
+    Object.keys(obj[key1]).forEach((key2) => {
+      if (
+        typeof obj[key1][key2] == 'number' ||
+        obj[key1][key2] instanceof Number
+      ) {
+        table[key1][key2] = obj[key1][key2];
+      }
     });
-    return new TableData(table);
-  }
+  });
+  return table;
+}
 
-  static fromAny(obj: any): TableData {
-    const table = {} as IObj<IObj<number>>;
-    Object.keys(obj).forEach((key1) => {
-      table[key1] = {};
-      Object.keys(obj[key1]).forEach((key2) => {
-        if (
-          typeof obj[key1][key2] == 'number' ||
-          obj[key1][key2] instanceof Number
-        ) {
-          table[key1][key2] = obj[key1][key2];
-        }
-      });
-    });
-    return new TableData(table);
-  }
+export function itemList(obj: ITableItem[]): IObj<IObj<number>> {
+  const rows = unique(obj.map((item) => item.row));
+  const table = {} as IObj<IObj<number>>;
+  rows.forEach((row) => {
+    table[row] = {};
+  });
+  obj.forEach((item) => {
+    table[item.row][item.column] = item.value;
+  });
+  return table;
+}
 
-  static itemList(obj: ITableItem[]): TableData {
-    const rows = unique(obj.map((item) => item.row));
-    const table = {} as IObj<IObj<number>>;
-    rows.forEach((row) => {
-      table[row] = {};
-    });
-    obj.forEach((item) => {
-      table[item.row][item.column] = item.value;
-    });
-    return new TableData(table);
-  }
+export function columnItemList(obj: IColumnItem[]): IObj<IObj<number>> {
+  const table = {} as IObj<IObj<number>>;
+  obj.forEach((item, index) => {
+    table[index] = {};
+  });
+  obj.forEach((item, index) => {
+    table[index][item.column] = item.value;
+  });
+  return table;
+}
 
-  static columnItemList(obj: IColumnItem[]): TableData {
-    const table = {} as IObj<IObj<number>>;
-    obj.forEach((item, index) => {
-      table[index] = {};
-    });
-    obj.forEach((item, index) => {
-      table[index][item.column] = item.value;
-    });
-    return new TableData(table);
-  }
+export function columnList(obj: IObj<number>[]): IObj<IObj<number>> {
+  const table = {} as IObj<IObj<number>>;
+  obj.forEach((item, index) => {
+    table[index] = Object.assign({}, item);
+  });
+  return table;
+}
 
-  static columnList(obj: IObj<number>[]): TableData {
-    const table = {} as IObj<IObj<number>>;
-    obj.forEach((item, index) => {
-      table[index] = Object.assign({}, item);
-    });
-    return new TableData(table);
-  }
+export function getAllRows(obj: IObj<IObj<number>>): string[] {
+  return Object.keys(obj);
+}
 
-  static getAllRows(obj: IObj<IObj<number>>): string[] {
-    return Object.keys(obj);
-  }
-
-  getAllRows(): string[] {
-    return TableData.getAllRows(this.table);
-  }
-
-  static getAllColumns(obj: IObj<IObj<number>>): string[] {
-    const columnsSet = new Set<string>();
-    Object.keys(obj).forEach((key1) =>
-      Object.keys(obj[key1]).forEach((key2) => {
-        columnsSet.add(key2);
-      })
-    );
-    return Array.from(columnsSet);
-  }
-
-  getAllColumns(): string[] {
-    return TableData.getAllColumns(this.table);
-  }
+export function getAllColumns(obj: IObj<IObj<number>>): string[] {
+  const columnsSet = new Set<string>();
+  Object.keys(obj).forEach((key1) =>
+    Object.keys(obj[key1]).forEach((key2) => {
+      columnsSet.add(key2);
+    })
+  );
+  return Array.from(columnsSet);
 }

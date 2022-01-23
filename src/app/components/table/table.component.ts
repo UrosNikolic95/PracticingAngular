@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { IDoubleTypedObject } from 'src/app/inner-logic/table.helpers';
+import { IDoubleTypedObject, IObj } from 'src/app/inner-logic/table.helpers';
 
 @Component({
   selector: 'app-table',
@@ -10,7 +10,7 @@ export class TableComponent implements OnInit {
   constructor() {}
 
   @Input()
-  data: IDoubleTypedObject<number> = {};
+  data: IObj<IObj<number>> = {};
 
   ngOnInit(): void {}
 
