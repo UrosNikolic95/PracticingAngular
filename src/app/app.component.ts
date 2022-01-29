@@ -10,8 +10,10 @@ import {
   AfordableWorkplaces,
   FactoryMaxWallet,
   FactoryMinWallet,
+  MaxIterations,
   MaxOfferredPrice,
   MaxSellingStock,
+  MinIterations,
   MinOfferredPrice,
   MinSellingStock,
   TotalFactoryWallet,
@@ -47,22 +49,12 @@ export class AppComponent implements OnInit {
       this.totalAllWallet = this.totalWorkerWallet + this.totalFactoryWallet;
       this.afordableWorkplaces = AfordableWorkplaces();
       this.data = transpose({
-        maxOfferedPrice: MaxOfferredPrice().reduce((red, item) => {
-          red[item.resource] = item.offeredPrice;
-          return red;
-        }, {} as ITypedObject<number>),
-        minOfferedPrice: MinOfferredPrice().reduce((red, item) => {
-          red[item.resource] = item.offeredPrice;
-          return red;
-        }, {} as ITypedObject<number>),
-        minSellingStock: MinSellingStock().reduce((red, item) => {
-          red[item.resource] = item.quantity;
-          return red;
-        }, {} as ITypedObject<number>),
-        maxSellingStock: MaxSellingStock().reduce((red, item) => {
-          red[item.resource] = item.quantity;
-          return red;
-        }, {} as ITypedObject<number>),
+        maxOfferedPrice: MaxOfferredPrice(),
+        minOfferedPrice: MinOfferredPrice(),
+        minSellingStock: MinSellingStock(),
+        maxSellingStock: MaxSellingStock(),
+        minIterations: MinIterations(),
+        maxIterations: MaxIterations(),
       });
     });
   }

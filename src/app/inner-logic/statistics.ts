@@ -1,3 +1,4 @@
+import { CalculateIterationsForResource } from './logics';
 import {
   FactoryModel,
   ObjectLiteral,
@@ -39,60 +40,40 @@ export function AfordableWorkplaces(): number {
   );
 }
 
-export function MaxOfferredPrice(): ResourceOfferredPriceData[] {
+export function MaxOfferredPrice(): TypedObjectLiteral<number> {
   const data = GetMaxValues(
     FactoryModel.allFactories,
     (el) => el.producesResource,
     (el) => el.offeredPrice
   );
-  return Object.keys(data).map((resource) => {
-    const val = new ResourceOfferredPriceData();
-    val.offeredPrice = data[resource];
-    val.resource = resource;
-    return val;
-  });
+  return data;
 }
 
-export function MinOfferredPrice(): ResourceOfferredPriceData[] {
+export function MinOfferredPrice(): TypedObjectLiteral<number> {
   const data = GetMaxValues(
     FactoryModel.allFactories,
     (el) => el.producesResource,
     (el) => el.offeredPrice
   );
-  return Object.keys(data).map((resource) => {
-    const val = new ResourceOfferredPriceData();
-    val.offeredPrice = data[resource];
-    val.resource = resource;
-    return val;
-  });
+  return data;
 }
 
-export function MinSellingStock(): ResourceQuantityData[] {
+export function MinSellingStock(): TypedObjectLiteral<number> {
   const data = GetMaxValues(
     FactoryModel.allFactories,
     (el) => el.producesResource,
     (el) => el.inventoryData.production.totalQuantity
   );
-  return Object.keys(data).map((resource) => {
-    const val = new ResourceQuantityData();
-    val.quantity = data[resource];
-    val.resource = resource;
-    return val;
-  });
+  return data;
 }
 
-export function MaxSellingStock(): ResourceQuantityData[] {
+export function MaxSellingStock(): TypedObjectLiteral<number> {
   const data = GetMaxValues(
     FactoryModel.allFactories,
     (el) => el.producesResource,
     (el) => el.inventoryData.production.totalQuantity
   );
-  return Object.keys(data).map((resource) => {
-    const val = new ResourceQuantityData();
-    val.quantity = data[resource];
-    val.resource = resource;
-    return val;
-  });
+  return data;
 }
 
 export function GetMinValues<T>(
@@ -127,6 +108,36 @@ export function GetMaxValues<T>(
     } else if (data[key] < val) {
       data[key] = val;
     }
+  });
+  return data;
+}
+
+export function MinIterations(): TypedObjectLiteral<number> {
+  const data: TypedObjectLiteral<number> = {};
+  FactoryModel.allFactories.forEach((factory) => {
+    Object.keys(factory.inventoryData.consumption).forEach((resource) => {
+      const iterations = CalculateIterationsForResource(factory, resource);
+      if (!data[resource]) {
+        data[resource] = iterations;
+      } else if (data[resource] > iterations) {
+        data[resource] = iterations;
+      }
+    });
+  });
+  return data;
+}
+
+export function MaxIterations(): TypedObjectLiteral<number> {
+  const data: TypedObjectLiteral<number> = {};
+  FactoryModel.allFactories.forEach((factory) => {
+    Object.keys(factory.inventoryData.consumption).forEach((resource) => {
+      const iterations = CalculateIterationsForResource(factory, resource);
+      if (!data[resource]) {
+        data[resource] = iterations;
+      } else if (data[resource] < iterations) {
+        data[resource] = iterations;
+      }
+    });
   });
   return data;
 }
