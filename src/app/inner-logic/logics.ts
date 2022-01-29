@@ -248,7 +248,7 @@ export function CalculateIterationsForResource(
 ): number {
   const consumption = factory.productionLineData.consumptionQuantity[resource];
   const inventory = factory.inventoryData.consumption[resource].totalQuantity;
-  return inventory / consumption;
+  return Math.floor(inventory / consumption);
 }
 
 export function FindResourceWithsmallestRunoutIterations(

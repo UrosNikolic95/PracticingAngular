@@ -50,7 +50,7 @@ export function MaxOfferredPrice(): TypedObjectLiteral<number> {
 }
 
 export function MinOfferredPrice(): TypedObjectLiteral<number> {
-  const data = GetMaxValues(
+  const data = GetMinValues(
     FactoryModel.allFactories,
     (el) => el.producesResource,
     (el) => el.offeredPrice
@@ -59,7 +59,7 @@ export function MinOfferredPrice(): TypedObjectLiteral<number> {
 }
 
 export function MinSellingStock(): TypedObjectLiteral<number> {
-  const data = GetMaxValues(
+  const data = GetMinValues(
     FactoryModel.allFactories,
     (el) => el.producesResource,
     (el) => el.inventoryData.production.totalQuantity
